@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ai Là Triệu Phú EDU 3.0 - Siêu Cấp</title>
+    <title> Ai Là Triệu Phú EDU 4.0 - Siêu Cấp</title>
     <!-- Thư viện hỗ trợ -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/polyfill/3.111.0/polyfill.min.js"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
@@ -102,13 +101,13 @@
 <body>
 
 <div id="app" class="mobile-frame bg-gradient-vtv3">
-    <div class="fixed-copyright-footer"><div class="footer-text">Bản quyền thuộc về Trường THCS Thuỷ Phương, Thành phố Huế</div></div>
+    <div class="fixed-copyright-footer"><div class="footer-text">Bản quyền thuộc về Trường THCS Thanh Thuỷ, Thành phố Huế</div></div>
 
     <!-- MÀN HÌNH CHỦ -->
     <div id="screen-home" class="flex-1 flex flex-col p-5 items-center justify-center space-y-4 text-center overflow-y-auto">
         <div class="text-center">
-            <h1 class="text-2xl font-black gold-text italic drop-shadow-lg uppercase">Ai Là Triệu Phú Edu 3.0</h1>
-            <div class="bg-white text-blue-900 px-5 py-0.5 rounded-full font-black text-xs inline-block shadow-lg mt-1 tracking-widest uppercase"> BÀI 53. MẶT TRĂNG </div>
+            <h1 class="text-2xl font-black gold-text italic drop-shadow-lg uppercase">Ai Là Triệu Phú EDU 4.0</h1>
+            <div class="bg-white text-blue-900 px-5 py-0.5 rounded-full font-black text-xs inline-block shadow-lg mt-1 tracking-widest uppercase"> TÌM HIỂU GIÁO DỤC STEM </div>
         </div>
 
         <div class="flex space-x-5 w-full justify-center">
@@ -206,7 +205,7 @@
 
     <!-- MÀN HÌNH VINH DANH -->
     <div id="screen-result" class="hidden flex-1 flex flex-col items-center justify-center p-6 space-y-4 text-center overflow-y-auto">
-        <h1 class="text-2xl font-black gold-text italic uppercase">AI LÀ TRIỆU PHÚ EDU 3.0</h1>
+        <h1 class="text-2xl font-black gold-text italic uppercase">AI LÀ TRIỆU PHÚ EDU 4.0</h1>
         
         <p id="scratch-msg" class="hidden text-yellow-400 font-black mb-2 animate-bounce uppercase text-[10px]">Hãy cào để biết kết quả!</p>
         
@@ -281,7 +280,7 @@
 
     <div id="modal-rules" class="hidden fixed inset-0 z-[4000] bg-black/98 flex items-center justify-center p-6 text-white text-center">
         <div class="bg-blue-900 border-4 border-yellow-500 p-6 rounded-[35px] w-full max-sm shadow-2xl text-white">
-            <h3 class="gold-text font-black text-xl mb-4 uppercase italic text-center"> THỂ LỆ TRÒ CHƠI AI LÀ TRIỆU PHÚ EDU 3.0</h3>
+            <h3 class="gold-text font-black text-xl mb-4 uppercase italic text-center"> THỂ LỆ TRÒ CHƠI AI LÀ TRIỆU PHÚ EDU 4.0</h3>
             <div class="text-xs space-y-3 h-[40vh] overflow-y-auto pr-2 leading-relaxed font-medium text-left">
                 <p>1. Chinh phục 20 câu hỏi (12 Trắc nghiệm, 4 Đúng/Sai, 4 Trả lời ngắn).</p>
                 <p>2. Chế độ Luyện tập & Ghế nóng: Sai 1 câu dừng cuộc chơi ngay. Có 3 quyền trợ giúp: 50:50 (chỉ áp dụng từ câu 1 đến câu 12); Hỏi ý kiến khán giả; Gọi điện cho người thân; Từ câu hỏi thứ 13, có thêm quyền trợ giúp: hỏi ý kiến chuyên gia. </p>
@@ -313,7 +312,7 @@
             <h3 class="text-xl font-black text-blue-900 mb-6 uppercase italic font-black">Biểu đồ chất lượng</h3>
             <div id="stats-bars" class="space-y-4 text-left text-black"></div>
             <button onclick="window.hideModal('modal-stats')" class="w-full mt-8 bg-red-600 text-white py-4 rounded-2xl font-black shadow-xl uppercase text-white font-black text-sm">Đóng</button>
-        </div>
+        </div> 
     </div>
 </div>
 
@@ -334,7 +333,7 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-    const appId = 'ailatrieuphuedu30bai51';
+    const appId = 'ailatrieuphuedu30bai50';
 
     // --- UTILS ---
     const pingSound = new Audio('https://www.soundjay.com/buttons/sounds/button-37a.mp3');
@@ -356,340 +355,440 @@
     }
 
 
-/* NGÂN HÀNG CÂU HỎI HUE SMARTTEST 7991 
-  Bài 53. MẶT TRĂNG
-  Bản quyền: Thạc sĩ Nguyễn Văn Cần & THCS Thủy Phương
-*/
+// // --- NGÂN HÀNG CÂU HỎI Tìm hiểu về giáo dục STEM---
 
-/* NGÂN HÀNG CÂU HỎI HUE SMARTTEST 7991 
-  Bài 53. MẶT TRĂNG
-  Bản quyền: Thạc sĩ Nguyễn Văn Cần & THCS Thủy Phương
-*/
-
-// --- PHẦN I: TRẮC NGHIỆM ĐA LỰA CHỌN (BANK_MCQ) ---
-const BANK_MCQ = [
-  {
-    id: "53.1",
-    q: "Trong các thiên thể sau đây, thiên thể nào có khả năng tự phát ra ánh sáng?",
-    a: ["Mặt Trăng", "Sao chổi", "Mặt Trời", "Trái Đất"],
-    c: 2,
-    ex: "Mặt Trời là một ngôi sao, có khả năng tự phát sáng nhờ các phản ứng nhiệt hạch. Mặt Trăng, sao chổi và Trái Đất chỉ phản xạ ánh sáng."
-  },
-  {
-    id: "53.2",
-    q: "Hệ Mặt Trời nằm ở vị trí nào trong vũ trụ?",
-    a: ["Là trung tâm của toàn vũ trụ", "Là một phần nhỏ của Ngân Hà", "Nằm ngoài phạm vi của các thiên hà", "Là thiên hà lớn nhất trong vũ trụ"],
-    c: 1,
-    ex: "Hệ Mặt Trời là một hệ hành tinh nhỏ nằm trong dải Ngân Hà (Milky Way)."
-  },
-  {
-    id: "53.3",
-    q: "Phát biểu nào sau đây là ĐÚNG khi nói về các hành tinh trong hệ Mặt Trời?",
-    a: ["Các hành tinh đều có cùng một khoảng cách đến Mặt Trời", "Các hành tinh chuyển động quanh Mặt Trời với cùng một chu kì", "Hành tinh càng xa Mặt Trời thì chu kì quay quanh Mặt Trời càng lớn", "Tất cả các hành tinh đều có kích thước và cấu tạo giống hệt nhau"],
-    c: 2,
-    ex: "Theo quy luật thiên văn, hành tinh ở quỹ đạo càng xa Mặt Trời thì quãng đường di chuyển càng dài và tốc độ càng chậm, dẫn đến chu kì quay càng lớn."
-  },
-  {
-    id: "53.4",
-    q: "Tại sao khi quan sát sao chổi, chúng ta thường thấy nó có một cái đuôi dài sáng rực?",
-    a: ["Do sao chổi tự cháy khi chuyển động", "Do băng và bụi bị bốc hơi dưới nhiệt độ của Mặt Trời tạo thành", "Do va chạm với các thiên thạch khác", "Do mang theo năng lượng điện trường"],
-    c: 1,
-    ex: "Khi lại gần Mặt Trời, nhiệt độ cao làm băng đá thăng hoa kéo theo bụi tạo thành đuôi phản xạ ánh sáng rực rỡ."
-  },
-  {
-    id: "53.5",
-    q: "Các hành tinh trong hệ Mặt Trời có đặc điểm gì về ánh sáng?",
-    a: ["Tự phát ra ánh sáng nhờ phản ứng nhiệt hạch", "Phản xạ ánh sáng nhận được từ Mặt Trời", "Không bao giờ có ánh sáng", "Chỉ phát sáng khi đi vào vùng tối của vũ trụ"],
-    c: 1,
-    ex: "Các hành tinh không phải ngôi sao, chúng là những thiên thể tối và ta nhìn thấy chúng nhờ phản xạ ánh sáng Mặt Trời."
-  },
-  {
-    id: "53.6",
-    q: "Ngân Hà chứa hệ Mặt Trời của chúng ta có hình dạng đặc trưng nào?",
-    a: ["Hình cầu đặc", "Hình xoắn ốc phẳng", "Hình lập phương", "Hình trụ dài"],
-    c: 1,
-    ex: "Ngân Hà là một thiên hà xoắn ốc có dạng đĩa phẳng với các nhánh xoắn chứa hàng trăm tỉ ngôi sao."
-  },
-  {
-    id: "53.7",
-    q: "Thứ tự các hành tinh tính từ gần Mặt Trời nhất là:",
-    a: ["Thủy tinh, Kim tinh, Trái Đất, Hỏa tinh, Mộc tinh, Thổ tinh, Thiên Vương tinh, Hải Vương tinh", "Kim tinh, Thủy tinh, Trái Đất, Hỏa tinh, Thổ tinh, Mộc tinh, Thiên Vương tinh, Hải Vương tinh", "Thủy tinh, Trái Đất, Kim tinh, Hỏa tinh, Mộc tinh, Thổ tinh, Hải Vương tinh, Thiên Vương tinh", "Thủy tinh, Kim tinh, Trái Đất, Mộc tinh, Hỏa tinh, Thổ tinh, Thiên Vương tinh, Hải Vương tinh"],
-    c: 0,
-    ex: "Thứ tự chuẩn xác là: Thủy, Kim, Trái Đất, Hỏa, Mộc, Thổ, Thiên Vương, Hải Vương."
-  },
-  {
-    id: "53.8",
-    q: "Đuôi của sao chổi luôn có xu hướng hướng về phía nào?",
-    a: ["Hướng thẳng về phía Mặt Trời", "Hướng ngược chiều chuyển động", "Hướng ra xa phía Mặt Trời", "Luôn hướng về phía Trái Đất"],
-    c: 2,
-    ex: "Áp suất ánh sáng và gió Mặt Trời thổi các hạt bụi và khí bốc hơi từ sao chổi ra phía đối diện (xa khỏi Mặt Trời)."
-  },
-  {
-    id: "53.9",
-    q: "Thiên thể nào sau đây KHÔNG tự phát sáng?",
-    a: ["Sao Bắc Cực", "Mặt Trời", "Sao chổi", "Sao Sirius"],
-    c: 2,
-    ex: "Sao chổi là khối băng bụi phản xạ ánh sáng. Sao Bắc Cực, Mặt Trời và Sirius là các ngôi sao tự phát sáng."
-  },
-  {
-    id: "53.10",
-    q: "Khi quan sát bầu trời đêm từ Trái Đất, dải sáng mờ vắt ngang bầu trời được gọi là gì?",
-    a: ["Hệ Mặt Trời", "Sao chổi khổng lồ", "Ngân Hà", "Các hành tinh"],
-    c: 2,
-    ex: "Đó là hình chiếu của thiên hà Ngân Hà (Milky Way) lên vòm trời khi nhìn từ bên trong đĩa phẳng của nó."
-  },
-  {
-    id: "53.11",
-    q: "Hành tinh nào có chu kì quay quanh Mặt Trời nhỏ nhất?",
-    a: ["Trái Đất", "Mộc tinh", "Thủy tinh", "Hải Vương tinh"],
-    c: 2,
-    ex: "Thủy tinh nằm gần Mặt Trời nhất nên có quỹ đạo ngắn nhất và thời gian hoàn thành vòng quay nhanh nhất (khoảng 88 ngày)."
-  },
-  {
-    id: "53.12",
-    q: "Thành phần cấu tạo chính của sao chổi thường bao gồm:",
-    a: ["Kim loại nóng chảy và dung nham", "Khí hiếm và bụi phóng xạ", "Băng, bụi và các loại đá", "Chỉ duy nhất là khí hiđrô và heli"],
-    c: 2,
-    ex: "Sao chổi được ví như 'quả bóng tuyết bẩn' gồm lõi băng đá trộn lẫn với bụi."
-  },
-  {
-    id: "53.13",
-    q: "Tại sao chúng ta có thể nhìn thấy Mặt Trăng vào ban đêm?",
-    a: ["Mặt Trăng tự phát sáng", "Mặt Trăng phản xạ ánh sáng từ Mặt Trời", "Mặt Trăng phản xạ ánh sáng từ Trái Đất", "Mặt Trăng chứa các chất lân quang"],
-    c: 1,
-    ex: "Mặt Trăng là vệ tinh, ta nhìn thấy nó nhờ ánh sáng Mặt Trời chiếu tới và phản xạ lại mắt ta."
-  },
-  {
-    id: "53.14",
-    q: "Mặt Trời cách tâm Ngân Hà một khoảng bằng bao nhiêu so với bán kính của Ngân Hà?",
-    a: ["Khoảng 1/4", "Khoảng 1/2", "Khoảng 2/3", "Nằm ngay tại tâm"],
-    c: 2,
-    ex: "Hệ Mặt Trời nằm ở vùng rìa, cách tâm Ngân Hà khoảng 2/3 bán kính đĩa thiên hà."
-  },
-  {
-    id: "53.15",
-    q: "Trong hệ Mặt Trời, nhóm 'hành tinh đá' bao gồm:",
-    a: ["Thủy tinh, Kim tinh, Trái Đất, Hỏa tinh", "Mộc tinh, Thổ tinh, Thiên Vương tinh, Hải Vương tinh", "Trái Đất, Mộc tinh, Thổ tinh, Thiên Vương tinh", "Thủy tinh, Kim tinh, Trái Đất, Mộc tinh"],
-    c: 0,
-    ex: "4 hành tinh vòng trong (Thủy, Kim, Trái Đất, Hỏa) có bề mặt rắn bằng đá và kim loại."
-  },
-  {
-    id: "53.16",
-    q: "Hình dạng quỹ đạo của sao chổi quanh Mặt Trời thường có đặc điểm gì?",
-    a: ["Hình tròn hoàn hảo", "Hình elip rất dẹt", "Đường thẳng", "Hình xoắn ốc"],
-    c: 1,
-    ex: "Quỹ đạo sao chổi thường là hình elip cực kỳ kéo dài (dẹt), đưa nó từ nơi rất xa lại rất gần Mặt Trời."
-  },
-  {
-    id: "53.17",
-    q: "Vật thể nào sau đây có tính chất ánh sáng giống như Mặt Trăng?",
-    a: ["Sao chổi", "Mặt Trời", "Sao Thiên Lang", "Đèn pin đang bật"],
-    c: 0,
-    ex: "Cả Mặt Trăng và sao chổi đều là thiên thể không tự phát sáng mà chỉ phản xạ ánh sáng."
-  },
-  {
-    id: "53.18",
-    q: "Hệ Mặt Trời thuộc thiên hà có tên tiếng Anh là gì?",
-    a: ["Andromeda", "Milky Way", "Sombrero", "Whirlpool"],
-    c: 1,
-    ex: "Milky Way là tên tiếng Anh của dải Ngân Hà."
-  },
-  {
-    id: "53.19",
-    q: "Đơn vị thiên văn (AU) được quy ước bằng:",
-    a: ["Khoảng cách Trái Đất - Mặt Trăng", "Khoảng cách trung bình Trái Đất - Mặt Trời", "Khoảng cách Thủy tinh - Hải Vương tinh", "Đường kính của Mặt Trời"],
-    c: 1,
-    ex: "1 AU (Astronomical Unit) bằng khoảng 150 triệu km, là khoảng cách từ Trái Đất đến Mặt Trời."
-  },
-  {
-    id: "53.20",
-    q: "Tại sao sao chổi chỉ có đuôi khi di chuyển lại gần Mặt Trời?",
-    a: ["Do chạy đủ nhanh tạo gió", "Nhiệt độ Mặt Trời làm bốc hơi băng trong nhân sao chổi", "Do lực hấp dẫn kéo vật chất rơi ra", "Do ánh sáng làm ta thấy đuôi có sẵn"],
-    c: 1,
-    ex: "Khi tiến lại gần nguồn nhiệt là Mặt Trời, băng đá thăng hoa thành khí và bụi tạo nên cái đuôi sáng rực."
-  },
-  {
-    id: "53.21",
-    q: "Những thiên thể nào sau đây thuộc nhóm 'tự phát sáng'?",
-    a: ["Các ngôi sao", "Các hành tinh", "Các vệ tinh", "Các tiểu hành tinh"],
-    c: 0,
-    ex: "Các ngôi sao là những khối khí khổng lồ có phản ứng nhiệt hạch nên tự phát ra năng lượng ánh sáng."
-  },
-  {
-    id: "53.22",
-    q: "Nhận định nào sau đây SAI khi nói về Ngân Hà?",
-    a: ["Ngân Hà chứa hàng trăm tỉ ngôi sao", "Hệ Mặt Trời nằm ở trung tâm của Ngân Hà", "Ngân Hà là một thiên hà phẳng", "Mặt Trời chuyển động quanh tâm Ngân Hà"],
-    c: 1,
-    ex: "Hệ Mặt Trời nằm ở rìa Ngân Hà, cách tâm khoảng 2/3 bán kính, không phải ở trung tâm."
-  },
-  {
-    id: "53.23",
-    q: "Hành tinh nào trong hệ Mặt Trời có kích thước lớn nhất?",
-    a: ["Trái Đất", "Thổ tinh", "Mộc tinh", "Hải Vương tinh"],
-    c: 2,
-    ex: "Mộc tinh (Jupiter) là hành tinh khí khổng lồ, lớn nhất trong 8 hành tinh của hệ Mặt Trời."
-  },
-  {
-    id: "53.24",
-    q: "Đặc điểm khác biệt nhất giữa sao chổi và các hành tinh là gì?",
-    a: ["Sao chổi không quay quanh Mặt Trời", "Thành phần chủ yếu là băng và có đuôi khi gần Mặt Trời", "Sao chổi tự phát sáng mạnh hơn", "Sao chổi luôn lớn hơn hành tinh"],
-    c: 1,
-    ex: "Sao chổi cấu tạo từ băng đá (không phải đá rắn hoặc khí) và có hiện tượng thăng hoa tạo đuôi đặc thù."
-  }
-];
-
-// --- PHẦN II: TRẮC NGHIỆM ĐÚNG/SAI (BANK_TF) ---
-const BANK_TF = [
-  {
-    id: "53.25",
-    q: "Khi nghiên cứu cấu trúc và đặc điểm thiên thể trong hệ Mặt Trời, hãy đánh giá các nhận định sau:",
-    items: [
-      "a) Mặt Trời là thiên thể duy nhất trong hệ Mặt Trời tự phát sáng.",
-      "b) Hệ Mặt Trời là hệ thống độc lập không thuộc thiên hà nào.",
-      "c) Hành tinh càng xa Mặt Trời thì chu kì quay quanh Mặt Trời càng dài.",
-      "d) Mặt Trăng là ngôi sao nhỏ vì ban đêm tỏa sáng rực rỡ."
-    ],
-    c: [true, false, true, false],
-    ex: "a-Đ; b-S (thuộc Ngân Hà); c-Đ (do quỹ đạo dài và vận tốc chậm); d-S (là vệ tinh phản xạ ánh sáng)."
-  },
-  {
-    id: "53.26",
-    q: "Bạn An thực hiện mô phỏng hệ Mặt Trời, hãy xác định tính đúng sai của các quan điểm:",
-    items: [
-      "a) Trong hệ Mặt Trời có tất cả 9 hành tinh chính thức.",
-      "b) Ngân Hà gồm hàng trăm tỉ sao, Mặt Trời là một ngôi sao trong đó.",
-      "c) Sao chổi cấu tạo từ băng đá, bụi; tạo đuôi khi lại gần Mặt Trời.",
-      "d) Khoảng cách từ các hành tinh đến Mặt Trời là như nhau."
-    ],
-    c: [false, true, true, false],
-    ex: "a-S (chỉ 8); b-Đ; c-Đ; d-S (khoảng cách khác nhau rất lớn)."
-  },
-  {
-    id: "53.27",
-    q: "Đánh giá các thông tin về thiên thể trong vũ trụ và hệ Mặt Trời:",
-    items: [
-      "a) Sao là những thiên thể tự phát sáng, ví dụ như Mặt Trời.",
-      "b) Đuôi của sao chổi luôn hướng về phía Mặt Trời do lực hấp dẫn.",
-      "c) Chu kì quay của Trái Đất ngắn hơn chu kì của Thủy tinh.",
-      "d) Các hành tinh phản xạ ánh sáng Mặt Trời nên ta thấy được chúng."
-    ],
-    c: [true, false, false, true],
-    ex: "a-Đ; b-S (hướng ra xa); c-S (Thủy tinh gần hơn nên chu kì ngắn hơn); d-Đ."
-  },
-  {
-    id: "53.28",
-    q: "Xem xét các nhận định về vị trí và đặc điểm ánh sáng của hệ Mặt Trời:",
-    items: [
-      "a) Đứng trên Trái Đất, ta thấy Ngân Hà là hình cầu sáng rực bao quanh.",
-      "b) Ánh sáng Mặt Trăng thực chất là ánh sáng Mặt Trời phản xạ lại.",
-      "c) Hệ Mặt Trời nằm ở vùng rìa, cách tâm Ngân Hà khoảng 2/3 bán kính.",
-      "d) Sao chổi là loại sao đặc biệt có khả năng tự phát sáng tạo đuôi."
-    ],
-    c: [false, true, true, false],
-    ex: "a-S (dạng dải sáng mờ vắt ngang); b-Đ; c-Đ; d-S (không tự phát sáng)."
-  },
-  {
-    id: "53.29",
-    q: "Về các đặc điểm cơ bản của hệ Mặt Trời, nhận định nào sau đây đúng hay sai?",
-    items: [
-      "a) Mặt Trời chiếm hơn 99% khối lượng hệ và đóng vai trò trung tâm.",
-      "b) Các hành tinh chuyển động trên các quỹ đạo hoàn toàn giống nhau.",
-      "c) Ngân Hà chỉ là một trong hàng tỉ thiên hà trong vũ trụ.",
-      "d) Sao chổi không phải thành viên hệ Mặt Trời do quỹ đạo khác thường."
-    ],
-    c: [true, false, true, false],
-    ex: "a-Đ; b-S (quỹ đạo khác nhau về độ lớn); c-Đ; d-S (vẫn là thành viên hệ)."
-  },
-  {
-    id: "53.30",
-    q: "Khi nói về các hành tinh và sao chổi, xác định các ý kiến sau:",
-    items: [
-      "a) Hải Vương tinh là hành tinh nằm gần Mặt Trời nhất nhóm hành tinh khí.",
-      "b) Khoảng cách trung bình Trái Đất - Mặt Trời được gọi là 1 AU.",
-      "c) Sao chổi có đuôi dài nhất khi ở vị trí xa Mặt Trời nhất.",
-      "d) Hệ Mặt Trời cùng hàng tỉ ngôi sao khác tạo thành Ngân Hà."
-    ],
-    c: [false, true, false, true],
-    ex: "a-S (Mộc tinh gần nhất nhóm khí); b-Đ; c-S (dài nhất khi gần Mặt Trời); d-Đ."
-  },
-  {
-    id: "53.31",
-    q: "Phân tích đặc điểm vật lí của các thiên thể:",
-    items: [
-      "a) Hành tinh không tự phát sáng mà phản chiếu ánh sáng ngôi sao.",
-      "b) Chu kì quay của Kim tinh lớn hơn chu kì của Trái Đất.",
-      "c) Sao chổi có đuôi sáng rực là do bụi và khí phản xạ ánh sáng.",
-      "d) Trái Đất là trung tâm hệ Mặt Trời, các hành tinh quay quanh nó."
-    ],
-    c: [true, false, true, false],
-    ex: "a-Đ; b-S (Kim tinh quay 225 ngày); c-Đ; d-S (Mặt Trời mới là trung tâm)."
-  },
-  {
-    id: "53.32",
-    q: "Đánh giá các phát biểu sau về vũ trụ bao la:",
-    items: [
-      "a) Sao chổi là hành tinh nhỏ có quỹ đạo tròn quay quanh ngôi sao.",
-      "b) Mặt Trời nằm trong hệ thống phẳng dạng đĩa gọi là Ngân Hà.",
-      "c) Mặt Trăng, hành tinh và sao chổi đều không tự phát sáng.",
-      "d) Ngân Hà là toàn bộ vũ trụ, không còn thiên hà nào khác."
-    ],
-    c: [false, true, true, false],
-    ex: "a-S (quỹ đạo elip dẹt); b-Đ; c-Đ; d-S (còn hàng tỉ thiên hà khác)."
-  }
-];
-
-// --- PHẦN III: NHẬN ĐỊNH ĐÚNG (BANK_SHORT) ---
-const BANK_SHORT = [
-  {
-    id: "53.33",
-    q: "Cho các nhận định về nguồn sáng:\n1. Mặt Trời là sao duy nhất trong vũ trụ tự phát sáng.\n2. Mặt Trăng phản xạ ánh sáng giúp ta thấy nó đêm.\n3. Hành tinh có khả năng tự phát sáng giống Mặt Trời.\n4. Sao chổi sáng khi gần Mặt Trời nhờ phản xạ.\n5. Các ngôi sao đêm đều tự phát sáng.\n6. Vệ tinh là nguồn sáng tự nhiên độc lập.",
-    c: "245",
-    ex: "Nhận định 2, 4, 5 đúng. Nhận định 1 sai (có tỉ tỉ sao), 3 và 6 sai (chỉ phản xạ)."
-  },
-  {
-    id: "53.34",
-    q: "Tìm các nhận định ĐÚNG về 8 hành tinh:\n1. Thủy tinh có chu kì quay ngắn nhất.\n2. Trái Đất ở vị trí thứ 4 tính từ Mặt Trời.\n3. Hành tinh càng xa Mặt Trời chu kì càng lớn.\n4. Tất cả hành tinh quay quanh Mặt Trời cùng chiều.\n5. Chu kì Mộc tinh nhỏ hơn chu kì Trái Đất.\n6. Hải Vương tinh ở rìa ngoài cùng hệ Mặt Trời.",
-    c: "1346",
-    ex: "Nhận định 1, 3, 4, 6 đúng. Nhận định 2 sai (vị trí thứ 3), 5 sai (Mộc tinh quay 12 năm)."
-  },
-  {
-    id: "53.35",
-    q: "Nhận định đúng về Ngân Hà và vị trí hệ Mặt Trời:\n1. Hệ Mặt Trời nằm tại tâm Ngân Hà.\n2. Ngân Hà dạng xoắn ốc có nhiều nhánh chứa sao.\n3. Cả hệ Mặt Trời quay quanh tâm Ngân Hà.\n4. Ngân Hà là thiên hà duy nhất trong vũ trụ.\n5. Hệ Mặt Trời rất nhỏ bé trong Ngân Hà.\n6. Dải Ngân Hà đêm là hình ảnh thiên hà ta nhìn từ bên trong.",
-    c: "2356",
-    ex: "Nhận định 2, 3, 5, 6 đúng. Nhận định 1 sai (nằm ở rìa), 4 sai (vũ trụ có vô số thiên hà)."
-  },
-  {
-    id: "53.36",
-    q: "Nhận định đúng về hiện tượng sao chổi:\n1. Sao chổi là ngôi sao đang rơi xuống Trái Đất.\n2. Đuôi sao chổi từ bụi và khí bốc hơi.\n3. Đuôi luôn hướng về phía Mặt Trời.\n4. Thấy sao chổi nhờ phản xạ ánh sáng Mặt Trời.\n5. Đuôi càng dài khi càng gần Mặt Trời.\n6. Sao chổi chuyển động không quy luật.",
-    c: "245",
-    ex: "Nhận định 2, 4, 5 đúng. Nhận định 1 sai (quay quanh Mặt Trời), 3 sai (hướng ra xa), 6 sai (theo quỹ đạo elip)."
-  },
-  {
-    id: "53.37",
-    q: "Nhận định đúng về khoảng cách và chu kì hành tinh:\n1. AU dùng đo khoảng cách thiên hà xa xôi.\n2. Hỏa tinh xa hơn Trái Đất nên chu kì > 1 năm.\n3. Thủy tinh là hành tinh đá nhỏ và gần nhất.\n4. Các hành tinh khí nằm ở phía ngoài hệ Mặt Trời.\n5. Chu kì không phụ thuộc vào khoảng cách.\n6. Thổ tinh là hành tinh duy nhất có vành đai.",
-    c: "234",
-    ex: "Nhận định 2, 3, 4 đúng. Nhận định 1 sai (AU dùng trong hệ sao), 5 sai (phụ thuộc chặt chẽ), 6 sai (Mộc, Thiên, Hải cũng có)."
-  },
-  {
-    id: "53.38",
-    q: "Phân biệt nguồn sáng và phản xạ:\n1. Mặt Trời là nguồn sáng chính của hệ.\n2. Hành tinh tự phát sáng lung linh qua kính thiên văn.\n3. Mặt Trăng phản xạ ánh sáng điều hòa đêm Trái Đất.\n4. Sao chổi không tự phát sáng.\n5. Mọi ngôi sao mắt thường thấy đều là vật phản xạ.\n6. Vệ tinh hành tinh khác cũng phản xạ ánh sáng.",
-    c: "1346",
-    ex: "Nhận định 1, 3, 4, 6 đúng. Nhận định 2 và 5 sai (hành tinh phản xạ, sao tự sáng)."
-  },
-  {
-    id: "53.40",
-    q: "Nhận định đúng về cấu tạo hệ Mặt Trời:\n1. Hệ gồm Mặt Trời, hành tinh, vệ tinh, sao chổi, tiểu hành tinh.\n2. Hành tinh khí nhỏ hơn hành tinh đá.\n3. Thiên Vương và Hải Vương là hành tinh băng khổng lồ.\n4. Thứ tự: Thủy, Kim, Trái Đất, Hỏa, Mộc, Thổ, Thiên, Hải.\n5. Mặt Trời chiếm phần lớn khối lượng hệ.\n6. Các hành tinh có cùng số vệ tinh.",
-    c: "1345",
-    ex: "Nhận định 1, 3, 4, 5 đúng. Nhận định 2 sai (khí lớn hơn đá), 6 sai (số vệ tinh rất khác nhau)."
-  },
-  {
-    id: "53.39", // Câu này là 53.40 trong text thô, đã điều chỉnh id
-    q: "Nhận định đúng về hình dạng và chuyển động sao chổi:\n1. Xuất hiện theo chu kì đều đặn (vài năm - trăm năm).\n2. Nhân chứa chủ yếu là khí hidro lỏng.\n3. Cái đuôi có thể dài hàng triệu km.\n4. Khi xa Mặt Trời, cái đuôi sẽ dần biến mất.\n5. Sao chổi tự cháy rực ngay cả ở xa Mặt Trời.\n6. Quay quanh Mặt Trời theo quỹ đạo elip kéo dài.",
-    c: "1346",
-    ex: "Nhận định 1, 3, 4, 6 đúng. Nhận định 2 sai (là băng đá), 5 sai (chỉ sáng nhờ phản xạ)."
-  }
-];
-
+const QUESTION_BANK = {
+  mcq: [
+    {
+      id: "I.1",
+      question: "STEM là sự tích hợp của các lĩnh vực nào?",
+      options: [
+        "Khoa học, công nghệ, kĩ thuật, toán học.",
+        "Khoa học, cơ khí, kinh tế, mĩ thuật.",
+        "Tự nhiên, xã hội, công nghệ, toán học.",
+        "Vật lí, hóa học, sinh học, tin học."
+      ],
+      correctAnswer: 0,
+      explanation: "STEM là viết tắt của các lĩnh vực Science (Khoa học), Technology (Công nghệ), Engineering (Kĩ thuật) và Mathematics (Toán học)."
+    },
+    {
+      id: "I.2",
+      question: "Bản chất của giáo dục STEM là gì?",
+      options: [
+        "Dạy học tách rời từng môn lí thuyết.",
+        "Tiếp cận liên môn giải quyết thực tiễn.",
+        "Chỉ đào tạo chuyên gia lập trình máy tính.",
+        "Tổ chức các trò chơi giải trí ngoại khóa."
+      ],
+      correctAnswer: 1,
+      explanation: "Bản chất của giáo dục STEM là tiếp cận liên môn, giúp học sinh vận dụng kiến thức để giải quyết các vấn đề thực tiễn."
+    },
+    {
+      id: "I.3",
+      question: "Mục tiêu cốt lõi của giáo dục STEM là gì?",
+      options: [
+        "Phát triển phẩm chất và năng lực học sinh.",
+        "Bắt buộc học sinh thi học sinh giỏi quốc gia.",
+        "Thay thế hoàn toàn sách giáo khoa hiện hành.",
+        "Giảm thời gian học tập trên lớp của học sinh."
+      ],
+      correctAnswer: 0,
+      explanation: "Mục tiêu cốt lõi của giáo dục STEM là phát triển toàn diện phẩm chất và năng lực cho học sinh."
+    },
+    {
+      id: "I.4",
+      question: "Thành tố T trong STEM viết tắt cho lĩnh vực nào?",
+      options: [
+        "Technology (Công nghệ).",
+        "Technique (Kĩ thuật).",
+        "Teaching (Giảng dạy).",
+        "Theory (Lí thuyết)."
+      ],
+      correctAnswer: 0,
+      explanation: "Thành tố T đại diện cho Technology (Công nghệ)."
+    },
+    {
+      id: "I.5",
+      question: "Thành tố E trong STEM viết tắt cho lĩnh vực nào?",
+      options: [
+        "Economics (Kinh tế).",
+        "Education (Giáo dục).",
+        "Engineering (Kĩ thuật).",
+        "Environment (Môi trường)."
+      ],
+      correctAnswer: 2,
+      explanation: "Thành tố E đại diện cho Engineering (Kĩ thuật)."
+    },
+    {
+      id: "I.6",
+      question: "Trong tiến trình STEM, bước đầu tiên học sinh làm gì?",
+      options: [
+        "Chế tạo đại trà sản phẩm.",
+        "Xác định vấn đề cần giải quyết.",
+        "Làm bài kiểm tra điểm số cuối kì.",
+        "Viết báo cáo tổng kết năm học."
+      ],
+      correctAnswer: 1,
+      explanation: "Bước đầu tiên trong tiến trình STEM là xác định vấn đề hoặc nhiệm vụ cần giải quyết."
+    },
+    {
+      id: "I.7",
+      question: "Mức độ trải nghiệm trong giáo dục STEM hướng tới điều gì?",
+      options: [
+        "Quan sát và khám phá hiện tượng.",
+        "Tự chế tạo tên lửa không gian.",
+        "Lập trình trí tuệ nhân tạo cấp cao.",
+        "Nghiên cứu hàn lâm chuyên sâu."
+      ],
+      correctAnswer: 0,
+      explanation: "Mức độ trải nghiệm giúp học sinh quan sát, tìm tòi và khám phá các hiện tượng tự nhiên, đời sống."
+    },
+    {
+      id: "I.8",
+      question: "Điểm khác biệt của mức độ thiết kế kĩ thuật là gì?",
+      options: [
+        "Chỉ đọc tài liệu lí thuyết sẵn có.",
+        "Tạo ra sản phẩm giải quyết nhiệm vụ.",
+        "Không cần sử dụng kiến thức toán học.",
+        "Chỉ nghe giáo viên giảng bài trên bảng."
+      ],
+      correctAnswer: 1,
+      explanation: "Mức độ thiết kế kĩ thuật yêu cầu học sinh phải chế tạo ra sản phẩm cụ thể để giải quyết nhiệm vụ đặt ra."
+    },
+    {
+      id: "I.9",
+      question: "Khi dạy học STEM, vai trò của giáo viên là gì?",
+      options: [
+        "Người truyền thụ kiến thức một chiều.",
+        "Người hướng dẫn, hỗ trợ và cố vấn.",
+        "Người làm thay mọi việc cho học sinh.",
+        "Người đứng ngoài không quan tâm lớp."
+      ],
+      correctAnswer: 1,
+      explanation: "Giáo viên trong lớp học STEM đóng vai trò là người định hướng, hỗ trợ, cố vấn để học sinh tự chủ khám phá."
+    },
+    {
+      id: "I.10",
+      question: "Phát biểu nào sau đây là SAI về giáo dục STEM?",
+      options: [
+        "Gắn kết lí thuyết với thực tiễn đời sống.",
+        "Chỉ dành riêng cho học sinh giỏi xuất sắc.",
+        "Rèn luyện kĩ năng làm việc nhóm hiệu quả.",
+        "Phát triển tư duy sáng tạo cho học sinh."
+      ],
+      correctAnswer: 1,
+      explanation: "Giáo dục STEM dành cho tất cả học sinh chứ không phải chỉ riêng học sinh giỏi xuất sắc."
+    },
+    {
+      id: "I.11",
+      question: "Môn học nào đóng vai trò định lượng trong STEM?",
+      options: [
+        "Ngữ văn.",
+        "Lịch sử.",
+        "Toán học.",
+        "Âm nhạc."
+      ],
+      correctAnswer: 2,
+      explanation: "Toán học cung cấp các công cụ tính toán, đo đạc và đóng vai trò định lượng trong STEM."
+    },
+    {
+      id: "I.12",
+      question: "Môn học nào cung cấp nguyên lí tự nhiên trong STEM?",
+      options: [
+        "Khoa học tự nhiên.",
+        "Giáo dục công dân.",
+        "Thể dục thể thao.",
+        "Mỹ thuật hội họa."
+      ],
+      correctAnswer: 0,
+      explanation: "Khoa học tự nhiên cung cấp các nguyên lí, định luật nền tảng về thế giới tự nhiên."
+    },
+    {
+      id: "I.13",
+      question: "Hình thức triển khai STEM phổ biến nhất ở trường phổ thông là gì?",
+      options: [
+        "Lồng ghép trong môn học chính khóa.",
+        "Cho học sinh nghỉ học đi lao động.",
+        "Chỉ dạy học vào ban đêm trực tuyến.",
+        "Bắt buộc học sinh tự học ở nhà hoàn toàn."
+      ],
+      correctAnswer: 0,
+      explanation: "Hình thức triển khai phổ biến là lồng ghép các bài học STEM trong các môn học chính khóa."
+    },
+    {
+      id: "I.14",
+      question: "Sản phẩm trong bài học STEM yêu cầu như thế nào?",
+      options: [
+        "Phải là thiết bị điện tử đắt tiền.",
+        "Có tính ứng dụng giải quyết vấn đề.",
+        "Bắt buộc phải nhập khẩu từ nước ngoài.",
+        "Chỉ mang tính chất trang trí trưng bày."
+      ],
+      correctAnswer: 1,
+      explanation: "Sản phẩm STEM phải có tính ứng dụng thực tế để giải quyết vấn đề đặt ra."
+    },
+    {
+      id: "I.15",
+      question: "Trong tiến trình STEM, kiến thức nền nhằm mục đích gì?",
+      options: [
+        "Làm cơ sở lí luận để thiết kế sản phẩm.",
+        "Bắt học sinh học thuộc lòng không cần hiểu.",
+        "Làm tăng độ khó của bài kiểm tra viết.",
+        "Thay thế hoàn toàn thời gian thực hành."
+      ],
+      correctAnswer: 0,
+      explanation: "Kiến thức nền tảng là cơ sở lí luận để học sinh vận dụng vào việc thiết kế và chế tạo sản phẩm."
+    },
+    {
+      id: "I.16",
+      question: "Hoạt động thử nghiệm sản phẩm nhằm mục đích gì?",
+      options: [
+        "Kiểm tra mức độ đáp ứng tiêu chí kĩ thuật.",
+        "Làm hư hỏng sản phẩm để mua mới.",
+        "Kéo dài thời gian nghỉ ngơi của lớp học.",
+        "Trốn tránh việc báo cáo trước tập thể."
+      ],
+      correctAnswer: 0,
+      explanation: "Thử nghiệm giúp kiểm tra xem sản phẩm có đáp ứng các tiêu chí kĩ thuật đã đặt ra hay không."
+    },
+    {
+      id: "I.17",
+      question: "Khi sản phẩm chưa đạt tiêu chuẩn, học sinh cần làm gì?",
+      options: [
+        "Bỏ cuộc và không làm nữa.",
+        "Cải tiến và điều chỉnh thiết kế.",
+        "Nhờ giáo viên làm hộ từ đầu.",
+        "Che giấu khuyết điểm sản phẩm."
+      ],
+      correctAnswer: 1,
+      explanation: "Học sinh cần phân tích nguyên nhân, từ đó cải tiến và điều chỉnh thiết kế cho phù hợp."
+    },
+    {
+      id: "I.18",
+      question: "Đặc điểm của nhiệm vụ mở trong STEM là gì?",
+      options: [
+        "Chỉ có duy nhất một đáp án đúng.",
+        "Cho phép nhiều giải pháp sáng tạo.",
+        "Không có bất kì quy định nào cả.",
+        "Quá khó khiến học sinh không làm được."
+      ],
+      correctAnswer: 1,
+      explanation: "Nhiệm vụ mở cho phép học sinh tự do sáng tạo và đưa ra nhiều giải pháp khác nhau."
+    },
+    {
+      id: "I.19",
+      question: "Công cụ nào thường dùng để đánh giá năng lực học sinh STEM?",
+      options: [
+        "Bảng tiêu chí rubrics.",
+        "Điểm số ngẫu nhiên.",
+        "Cảm tính của giáo viên.",
+        "Thời gian nộp bài nhanh."
+      ],
+      correctAnswer: 0,
+      explanation: "Bảng tiêu chí rubrics là công cụ đánh giá khách quan và toàn diện quá trình cũng như sản phẩm của học sinh."
+    },
+    {
+      id: "I.20",
+      question: "Vật liệu làm sản phẩm STEM ưu tiên loại nào?",
+      options: [
+        "Vật liệu tái chế, chi phí thấp.",
+        "Linh kiện vàng bạc đắt tiền.",
+        "Vật liệu độc hại nguy hiểm.",
+        "Thiết bị quân sự chuyên dụng."
+      ],
+      correctAnswer: 0,
+      explanation: "Ưu tiên sử dụng các vật liệu tái chế, thân thiện môi trường và có chi phí thấp."
+    },
+    {
+      id: "I.21",
+      question: "Ý nghĩa của việc làm việc nhóm trong STEM là gì?",
+      options: [
+        "Phát triển kĩ năng giao tiếp, hợp tác.",
+        "Đùn đẩy công việc cho bạn khác.",
+        "Gây mâu thuẫn giữa các thành viên.",
+        "Giảm thời gian suy nghĩ cá nhân."
+      ],
+      correctAnswer: 0,
+      explanation: "Làm việc nhóm giúp học sinh phát triển kĩ năng giao tiếp, lắng nghe và hợp tác hiệu quả."
+    },
+    {
+      id: "I.22",
+      question: "Thành tố S trong STEM là gì?",
+      options: [
+        "Science (Khoa học).",
+        "Sport (Thể thao).",
+        "System (Hệ thống).",
+        "Student (Học sinh)."
+      ],
+      correctAnswer: 0,
+      explanation: "Thành tố S viết tắt của Science (Khoa học)."
+    },
+    {
+      id: "I.23",
+      question: "Giáo dục STEM giúp học sinh kết nối điều gì?",
+      options: [
+        "Kiến thức nhà trường với thực tiễn.",
+        "Lí thuyết suông với học thuộc lòng.",
+        "Trò chơi điện tử với bạo lực học đường.",
+        "Điểm số cá nhân với tiền bạc."
+      ],
+      correctAnswer: 0,
+      explanation: "STEM giúp thu hẹp khoảng cách giữa lí thuyết học đường và thực tiễn đời sống."
+    },
+    {
+      id: "I.24",
+      question: "Phát biểu nào sau đây là ĐÚNG về giáo dục STEM?",
+      options: [
+        "Là phương thức giáo dục tích hợp liên môn.",
+        "Chỉ là phong trào hình thức tạm thời.",
+        "Thay thế hoàn toàn các môn khoa học xã hội.",
+        "Không cần sự chuẩn bị kế hoạch bài dạy."
+      ],
+      correctAnswer: 0,
+      explanation: "Giáo dục STEM là phương thức giáo dục tích hợp liên môn nhằm phát triển năng lực người học."
+    }
+  ],
+  truefalse: [
+    {
+      id: "II.1",
+      context: "Về khái niệm cơ bản của giáo dục STEM:",
+      statements: [
+        { text: "STEM là phương thức giáo dục tích hợp liên môn.", correct: true },
+        { text: "Giáo dục STEM tách rời hoàn toàn bốn lĩnh vực độc lập.", correct: false },
+        { text: "STEM giúp học sinh ứng dụng kiến thức giải quyết thực tiễn.", correct: true },
+        { text: "Mục tiêu STEM là loại bỏ các môn khoa học tự nhiên.", correct: false }
+      ],
+      explanation: "Ý a, c đúng vì STEM mang tính tích hợp và gắn liền thực tiễn; ý b, d sai vì STEM liên kết các môn chứ không loại bỏ."
+    },
+    {
+      id: "II.2",
+      context: "Về các mức độ tổ chức giáo dục STEM:",
+      statements: [
+        { text: "Mức độ trải nghiệm giúp học sinh quan sát, khám phá hiện tượng.", correct: true },
+        { text: "Mức độ thiết kế kĩ thuật yêu cầu tạo ra sản phẩm giải quyết vấn đề.", correct: true },
+        { text: "Mọi bài học STEM đều có chung một mức độ đơn giản.", correct: false },
+        { text: "Phân chia mức độ giúp giáo viên thiết kế bài dạy phù hợp.", correct: true }
+      ],
+      explanation: "Ý c sai vì STEM có các mức độ từ trải nghiệm đến thiết kế kĩ thuật với độ phức tạp khác nhau."
+    },
+    {
+      id: "II.3",
+      context: "Về tiến trình thiết kế kĩ thuật trong STEM:",
+      statements: [
+        { text: "Bước đầu tiên là xác định vấn đề và tiêu chí sản phẩm.", correct: true },
+        { text: "Học sinh có thể chế tạo ngay mà không cần tìm hiểu kiến thức.", correct: false },
+        { text: "Thử nghiệm và cải tiến giúp hoàn thiện sản phẩm học tập.", correct: true },
+        { text: "Progress thiết kế kĩ thuật không tuân theo quy luật tư duy nào.", correct: false }
+      ],
+      explanation: "Ý b sai vì cần có kiến thức nền; ý d sai vì tiến trình tuân thủ tư duy khoa học chặt chẽ."
+    },
+    {
+      id: "II.4",
+      context: "Về vai trò các môn học trong STEM:",
+      statements: [
+        { text: "Toán học cung cấp công cụ tính toán và đo đạc.", correct: true },
+        { text: "Khoa học tự nhiên cung cấp nguyên lí, định luật nền tảng.", correct: true },
+        { text: "Công nghệ hướng dẫn quy trình chế tạo sản phẩm.", correct: true },
+        { text: "Các môn học hoạt động đơn lẻ không liên quan nhau.", correct: false }
+      ],
+      explanation: "Ý d sai vì các lĩnh vực trong STEM có sự liên kết chặt chẽ với nhau."
+    },
+    {
+      id: "II.5",
+      context: "Về công tác đánh giá học sinh trong STEM:",
+      statements: [
+        { text: "Chỉ đánh giá duy nhất qua bài thi viết lí thuyết.", correct: false },
+        { text: "Đánh giá toàn quá trình và sản phẩm thực tế của học sinh.", correct: true },
+        { text: "Sử dụng bảng tiêu chí rubrics để đánh giá khách quan.", correct: true },
+        { text: "Không cần tiêu chí đánh giá sản phẩm rõ ràng.", correct: false }
+      ],
+      explanation: "Ý a, d sai vì đánh giá STEM cần toàn diện quá trình, sản phẩm và phải có tiêu chí rõ ràng."
+    },
+    {
+      id: "II.6",
+      context: "Về điều kiện thực hiện giáo dục STEM:",
+      statements: [
+        { text: "Có thể sử dụng vật liệu tái chế, chi phí thấp.", correct: true },
+        { text: "Bắt buộc phải có phòng thí nghiệm robot tỷ đô.", correct: false },
+        { text: "Sự sáng tạo của giáo viên là yếu tố quan trọng.", correct: true },
+        { text: "Địa phương khó khăn không thể triển khai STEM.", correct: false }
+      ],
+      explanation: "Ý b, d sai vì STEM rất linh hoạt, tận dụng vật liệu địa phương và không bắt buộc thiết bị đắt tiền."
+    },
+    {
+      id: "II.7",
+      context: "Về ý nghĩa của STEM đối với học sinh:",
+      statements: [
+        { text: "Phát triển năng lực giải quyết vấn đề thực tiễn.", correct: true },
+        { text: "Rèn luyện kĩ năng làm việc nhóm và giao tiếp.", correct: true },
+        { text: "Làm giảm sút năng lực tư duy sáng tạo của học sinh.", correct: false },
+        { text: "Kích thích niềm đam mê khoa học kĩ thuật.", correct: true }
+      ],
+      explanation: "Ý c sai vì STEM thúc đẩy mạnh mẽ tư duy sáng tạo và hứng thú học tập."
+    },
+    {
+      id: "II.8",
+      context: "Về vai trò của giáo viên trong lớp học STEM:",
+      statements: [
+        { text: "Chuyển từ truyền thụ sang người định hướng, hỗ trợ.", correct: true },
+        { text: "Làm thay mọi việc khó khăn thay cho học sinh.", correct: false },
+        { text: "Khích lệ học sinh tự khám phá, chế tạo sản phẩm.", correct: true },
+        { text: "Áp đặt duy nhất một cách làm rập khuôn.", correct: false }
+      ],
+      explanation: "Ý b, d sai vì giáo viên chỉ hỗ trợ định hướng, học sinh phải chủ động và sáng tạo."
+    }
+  ],
+  short: [
+    {
+      id: "III.1",
+      question: "Cho các nhận định sau về các lĩnh vực cấu thành STEM:\n1. STEM viết tắt của Khoa học, Công nghệ, Kĩ thuật, Toán học.\n2. Giáo dục STEM loại bỏ hoàn toàn các môn tự nhiên.\n3. Bản chất STEM là tiếp cận liên môn giải quyết thực tiễn.\n4. Mục tiêu STEM là nhồi nhét lí thuyết hàn lâm.\n5. Toán học đóng vai trò công cụ định lượng trong STEM.\n6. Sản phẩm STEM bắt buộc phải mua linh kiện ngoại.\n7. STEM góp phần phát triển năng lực học sinh.\n8. Giáo dục STEM chỉ là hoạt động ngoại khóa đơn thuần.",
+      answer: "1357",
+      explanation: "Các nhận định đúng là 1, 3, 5, 7."
+    },
+    {
+      id: "III.2",
+      question: "Cho các nhận định sau về các mức độ tổ chức STEM:\n1. Mức độ trải nghiệm giúp quan sát hiện tượng tự nhiên.\n2. Mức độ thiết kế kĩ thuật yêu cầu chế tạo sản phẩm.\n3. Tất cả bài học STEM chỉ có một mức độ duy nhất.\n4. Lồng ghép chính khóa là hình thức triển khai phổ biến.\n5. Không cần chọn mức độ phù hợp với đối tượng học sinh.\n6. Mức độ thiết kế đòi hỏi tích hợp kiến thức liên môn.\n7. Hoạt động STEM chỉ tổ chức ngoài hè ở ngoài trường.\n8. Phân loại mức độ giúp lập kế hoạch dạy học tốt hơn.",
+      answer: "1246",
+      explanation: "Các nhận định đúng là 1, 2, 4, 6."
+    },
+    {
+      id: "III.3",
+      question: "Ngày 14/8/2020, Bộ GD&ĐT đã ban hành Công văn về việc triển khai thực hiện giáo dục STEM trong trường trung học, đó là công văn số mấy?",
+      answer: "3098",
+      explanation: "Công văn số 3098/BGDĐT-GDTrH hướng dẫn thực hiện giáo dục STEM trong giáo dục trung học."
+    },
+    {
+      id: "III.4",
+      question: "Cho các nhận định sau về vai trò giáo viên và học sinh:\n1. Giáo viên là người định hướng, hỗ trợ, cố vấn.\n2. Học sinh chủ động khám phá và làm việc nhóm.\n3. Giáo viên làm thay toàn bộ các công đoạn khó.\n4. Học sinh được đưa ra nhiều giải pháp sáng tạo.\n5. Lớp học STEM khuyến khích tranh luận, phản biện.\n6. Giáo viên bắt học sinh sao chép y hệt một cách làm.\n7. Học sinh tự đánh giá và đánh giá chéo sản phẩm.\n8. Giáo viên chỉ chấm điểm giấy cuối kì duy nhất.",
+      answer: "1245",
+      explanation: "Các nhận định đúng là 1, 2, 4, 5."
+    },
+    {
+      id: "III.5",
+      question: "Cho các nhận định sau về kiểm tra, đánh giá trong STEM:\n1. Đánh giá toàn diện cả quá trình và sản phẩm.\n2. Chỉ dùng bài thi tự luận viết tay truyền thống.\n3. Sử dụng rubrics là công cụ đánh giá hiệu quả.\n4. Đánh giá thái độ làm việc nhóm của học sinh.\n5. Tiêu chí đánh giá cần rõ ràng và công khai.\n6. Giáo viên chấm điểm dựa vào cảm tính cá nhân.\n7. Khuyến khích tự đánh giá và đánh giá đồng đẳng.\n8. Kết quả đánh giá không có giá trị phản hồi.",
+      answer: "1345",
+      explanation: "Các nhận định đúng là 1, 3, 4, 5."
+    },
+    {
+      id: "III.6",
+      question: "Cho các nhận định sau về vật liệu và điều kiện STEM:\n1. Có thể dùng vật liệu tái chế, chi phí thấp.\n2. Bắt buộc phải có phòng lab robot đắt tiền.\n3. Tận dụng vật dụng sinh hoạt hằng ngày làm học liệu.\n4. Sự sáng tạo của giáo viên là yếu tố quyết định.\n5. Địa phương khó khăn không thể triển khai STEM.\n6. Công nghệ thông tin hỗ trợ đắc lực cho bài học.\n7. Huy động nguồn lực xã hội hóa từ phụ huynh.\n8. Học sinh cấm mang vật liệu từ nhà đến lớp.",
+      answer: "1346",
+      explanation: "Các nhận định đúng là 1, 3, 4, 6."
+    },
+    {
+      id: "III.7",
+      question: "Cho các nhận định sau về ý nghĩa của giáo dục STEM:\n1. Phát triển phẩm chất và năng lực học sinh.\n2. Vận dụng kiến thức liên môn giải quyết thực tiễn.\n3. Biến học sinh thành cỗ máy ghi nhớ máy móc.\n4. Rèn luyện kĩ năng mềm: làm việc nhóm, phản biện.\n5. Kích thích đam mê nghiên cứu khoa học kĩ thuật.\n6. Làm giảm sút học tập văn hóa trên lớp.\n7. Tạo cơ hội hiện thực hóa ý tưởng sáng tạo.\n8. Gây áp lực tâm lí căng thẳng quá mức cho học sinh.",
+      answer: "1245",
+      explanation: "Các nhận định đúng là 1, 2, 4, 5."
+    },
+    {
+      id: "III.8",
+      question: "Ngày 26/12/2018, lần đầu tiên, Bộ GD&ĐT đưa khái niệm giáo dục STEM vào trong chương trình giáo dục phổ thông, đó là thông tư số mấy?",
+      answer: "32",
+      explanation: "Thông tư số 32/2018/TT-BGDĐT ban hành Chương trình giáo dục phổ thông mới, lần đầu chính thức đưa giáo dục STEM vào chương trình."
+    }
+  ]
+};
     // --- STATE MANAGER ---
     let state_data = {
         user: { name: '', sbd: '', class: '', school: '', mcImg: '', playerImg: '' },
