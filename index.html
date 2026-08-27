@@ -1,430 +1,940 @@
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, getDocs, query, deleteDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-    // --- FIREBASE ---
-    const firebaseConfig = {
-        apiKey: "AIzaSyABRRwxTTwbPVTlsu6e22zTGPmMMHhJggY",
-        authDomain: "ailatrieuphuedu30.firebaseapp.com",
-        projectId: "ailatrieuphuedu30",
-        storageBucket: "ailatrieuphuedu30.firebasestorage.app",
-        messagingSenderId: "311640935009",
-        appId: "1:311640935009:web:359d3e1b71ffad26b17820"
-    };
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const appId = 'ailatrieuphuedu30bai50';
-
-    // --- UTILS ---
-    const pingSound = new Audio('https://www.soundjay.com/buttons/sounds/button-37a.mp3');
-    const playPing = () => { if(pingSound) { pingSound.currentTime = 0; pingSound.play().catch(()=>{}); } };
-    const shuffleArray = (arr) => { 
-        let a = [...arr];
-        for(let i=a.length-1; i>0; i--){ 
-            let j=Math.floor(Math.random()*(i+1)); 
-            [a[i],a[j]]=[a[j],a[i]]; 
-        } 
-        return a; 
-    };
-
-    async function compressImage(base64Str) {
-        return new Promise((resolve) => {
-            const img = new Image(); img.src = base64Str;
-            img.onload = () => {
-                const canvas = document.createElement('canvas');
-                let w = img.width, h = img.height;
-                if (w > 120) { h *= 120/w; w = 120; }
-                canvas.width = w; canvas.height = h;
-                canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                resolve(canvas.toDataURL('image/jpeg', 0.6));
-            };
-        });
-    }
-
-    // --- NGÂN HÀNG CÂU HỎI (ĐÃ CHUẨN HÓA DỮ LIỆU) ---
-    const RAW_BANK = {
-      mcq: [
-        { id: "I.1", question: "STEM là sự tích hợp của các lĩnh vực nào?", options: ["Khoa học, công nghệ, kĩ thuật, toán học.", "Khoa học, cơ khí, kinh tế, mĩ thuật.", "Tự nhiên, xã hội, công nghệ, toán học.", "Vật lí, hóa học, sinh học, tin học."], correctAnswer: 0, explanation: "STEM là viết tắt của các lĩnh vực Science (Khoa học), Technology (Công nghệ), Engineering (Kĩ thuật) và Mathematics (Toán học)." },
-        { id: "I.2", question: "Bản chất của giáo dục STEM là gì?", options: ["Dạy học tách rời từng môn lí thuyết.", "Tiếp cận liên môn giải quyết thực tiễn.", "Chỉ đào tạo chuyên gia lập trình máy tính.", "Tổ chức các trò chơi giải trí ngoại khóa."], correctAnswer: 1, explanation: "Bản chất của giáo dục STEM là tiếp cận liên môn, giúp học sinh vận dụng kiến thức để giải quyết các vấn đề thực tiễn." },
-        { id: "I.3", question: "Mục tiêu cốt lõi của giáo dục STEM là gì?", options: ["Phát triển phẩm chất và năng lực học sinh.", "Bắt buộc học sinh thi học sinh giỏi quốc gia.", "Thay thế hoàn toàn sách giáo khoa hiện hành.", "Giảm thời gian học tập trên lớp của học sinh."], correctAnswer: 0, explanation: "Mục tiêu cốt lõi của giáo dục STEM là phát triển toàn diện phẩm chất và năng lực cho học sinh." },
-        { id: "I.4", question: "Thành tố T trong STEM viết tắt cho lĩnh vực nào?", options: ["Technology (Công nghệ).", "Technique (Kĩ thuật).", "Teaching (Giảng dạy).", "Theory (Lí thuyết)."], correctAnswer: 0, explanation: "Thành tố T đại diện cho Technology (Công nghệ)." },
-        { id: "I.5", question: "Thành tố E trong STEM viết tắt cho lĩnh vực nào?", options: ["Economics (Kinh tế).", "Education (Giáo dục).", "Engineering (Kĩ thuật).", "Environment (Môi trường)."], correctAnswer: 2, explanation: "Thành tố E đại diện cho Engineering (Kĩ thuật)." },
-        { id: "I.6", question: "Trong tiến trình STEM, bước đầu tiên học sinh làm gì?", options: ["Chế tạo đại trà sản phẩm.", "Xác định vấn đề cần giải quyết.", "Làm bài kiểm tra điểm số cuối kì.", "Viết báo cáo tổng kết năm học."], correctAnswer: 1, explanation: "Bước đầu tiên trong tiến trình STEM là xác định vấn đề hoặc nhiệm vụ cần giải quyết." },
-        { id: "I.7", question: "Mức độ trải nghiệm trong giáo dục STEM hướng tới điều gì?", options: ["Quan sát và khám phá hiện tượng.", "Tự chế tạo tên lửa không gian.", "Lập trình trí tuệ nhân tạo cấp cao.", "Nghiên cứu hàn lâm chuyên sâu."], correctAnswer: 0, explanation: "Mức độ trải nghiệm giúp học sinh quan sát, tìm tòi và khám phá các hiện tượng tự nhiên, đời sống." },
-        { id: "I.8", question: "Điểm khác biệt của mức độ thiết kế kĩ thuật là gì?", options: ["Chỉ đọc tài liệu lí thuyết sẵn có.", "Tạo ra sản phẩm giải quyết nhiệm vụ.", "Không cần sử dụng kiến thức toán học.", "Chỉ nghe giáo viên giảng bài trên bảng."], correctAnswer: 1, explanation: "Mức độ thiết kế kĩ thuật yêu cầu học sinh phải chế tạo ra sản phẩm cụ thể để giải quyết nhiệm vụ đặt ra." },
-        { id: "I.9", question: "Khi dạy học STEM, vai trò của giáo viên là gì?", options: ["Người truyền thụ kiến thức một chiều.", "Người hướng dẫn, hỗ trợ và cố vấn.", "Người làm thay mọi việc cho học sinh.", "Người đứng ngoài không quan tâm lớp."], correctAnswer: 1, explanation: "Giáo viên trong lớp học STEM đóng vai trò là người định hướng, hỗ trợ, cố vấn để học sinh tự chủ khám phá." },
-        { id: "I.10", question: "Phát biểu nào sau đây là SAI về giáo dục STEM?", options: ["Gắn kết lí thuyết với thực tiễn đời sống.", "Chỉ dành riêng cho học sinh giỏi xuất sắc.", "Rèn luyện kĩ năng làm việc nhóm hiệu quả.", "Phát triển tư duy sáng tạo cho học sinh."], correctAnswer: 1, explanation: "Giáo dục STEM dành cho tất cả học sinh chứ không phải chỉ riêng học sinh giỏi xuất sắc." },
-        { id: "I.11", question: "Môn học nào đóng vai trò định lượng trong STEM?", options: ["Ngữ văn.", "Lịch sử.", "Toán học.", "Âm nhạc."], correctAnswer: 2, explanation: "Toán học cung cấp các công cụ tính toán, đo đạc và đóng vai trò định lượng trong STEM." },
-        { id: "I.12", question: "Môn học nào cung cấp nguyên lí tự nhiên trong STEM?", options: ["Khoa học tự nhiên.", "Giáo dục công dân.", "Thể dục thể thao.", "Mỹ thuật hội họa."], correctAnswer: 0, explanation: "Khoa học tự nhiên cung cấp các nguyên lí, định luật nền tảng về thế giới tự nhiên." },
-        { id: "I.13", question: "Hình thức triển khai STEM phổ biến nhất ở trường phổ thông là gì?", options: ["Lồng ghép trong môn học chính khóa.", "Cho học sinh nghỉ học đi lao động.", "Chỉ dạy học vào ban đêm trực tuyến.", "Bắt buộc học sinh tự học ở nhà hoàn toàn."], correctAnswer: 0, explanation: "Hình thức triển khai phổ biến là lồng ghép các bài học STEM trong các môn học chính khóa." },
-        { id: "I.14", question: "Sản phẩm trong bài học STEM yêu cầu như thế nào?", options: ["Phải là thiết bị điện tử đắt tiền.", "Có tính ứng dụng giải quyết vấn đề.", "Bắt buộc phải nhập khẩu từ nước ngoài.", "Chỉ mang tính chất trang trí trưng bày."], correctAnswer: 1, explanation: "Sản phẩm STEM phải có tính ứng dụng thực tế để giải quyết vấn đề đặt ra." },
-        { id: "I.15", question: "Trong tiến trình STEM, kiến thức nền nhằm mục đích gì?", options: ["Làm cơ sở lí luận để thiết kế sản phẩm.", "Bắt học sinh học thuộc lòng không cần hiểu.", "Làm tăng độ khó của bài kiểm tra viết.", "Thay thế hoàn toàn thời gian thực hành."], correctAnswer: 0, explanation: "Kiến thức nền tảng là cơ sở lí luận để học sinh vận dụng vào việc thiết kế và chế tạo sản phẩm." },
-        { id: "I.16", question: "Hoạt động thử nghiệm sản phẩm nhằm mục đích gì?", options: ["Kiểm tra mức độ đáp ứng tiêu chí kĩ thuật.", "Làm hư hỏng sản phẩm để mua mới.", "Kéo dài thời gian nghỉ ngơi của lớp học.", "Trốn tránh việc báo cáo trước tập thể."], correctAnswer: 0, explanation: "Thử nghiệm giúp kiểm tra xem sản phẩm có đáp ứng các tiêu chí kĩ thuật đã đặt ra hay không." },
-        { id: "I.17", question: "Khi sản phẩm chưa đạt tiêu chuẩn, học sinh cần làm gì?", options: ["Bỏ cuộc và không làm nữa.", "Cải tiến và điều chỉnh thiết kế.", "Nhờ giáo viên làm hộ từ đầu.", "Che giấu khuyết điểm sản phẩm."], correctAnswer: 1, explanation: "Học sinh cần phân tích nguyên nhân, từ đó cải tiến và điều chỉnh thiết kế cho phù hợp." },
-        { id: "I.18", question: "Đặc điểm của nhiệm vụ mở trong STEM là gì?", options: ["Chỉ có duy nhất một đáp án đúng.", "Cho phép nhiều giải pháp sáng tạo.", "Không có bất kì quy định nào cả.", "Quá khó khiến học sinh không làm được."], correctAnswer: 1, explanation: "Nhiệm vụ mở cho phép học sinh tự do sáng tạo và đưa ra nhiều giải pháp khác nhau." },
-        { id: "I.19", question: "Công cụ nào thường dùng để đánh giá năng lực học sinh STEM?", options: ["Bảng tiêu chí rubrics.", "Điểm số ngẫu nhiên.", "Cảm tính của giáo viên.", "Thời gian nộp bài nhanh."], correctAnswer: 0, explanation: "Bảng tiêu chí rubrics là công cụ đánh giá khách quan và toàn diện quá trình cũng như sản phẩm của học sinh." },
-        { id: "I.20", question: "Vật liệu làm sản phẩm STEM ưu tiên loại nào?", options: ["Vật liệu tái chế, chi phí thấp.", "Linh kiện vàng bạc đắt tiền.", "Vật liệu độc hại nguy hiểm.", "Thiết bị quân sự chuyên dụng."], correctAnswer: 0, explanation: "Ưu tiên sử dụng các vật liệu tái chế, thân thiện môi trường và có chi phí thấp." },
-        { id: "I.21", question: "Ý nghĩa của việc làm việc nhóm trong STEM là gì?", options: ["Phát triển kĩ năng giao tiếp, hợp tác.", "Đùn đẩy công việc cho bạn khác.", "Gây mâu thuẫn giữa các thành viên.", "Giảm thời gian suy nghĩ cá nhân."], correctAnswer: 0, explanation: "Làm việc nhóm giúp học sinh phát triển kĩ năng giao tiếp, lắng nghe và hợp tác hiệu quả." },
-        { id: "I.22", question: "Thành tố S trong STEM là gì?", options: ["Science (Khoa học).", "Sport (Thể thao).", "System (Hệ thống).", "Student (Học sinh)."], correctAnswer: 0, explanation: "Thành tố S viết tắt của Science (Khoa học)." },
-        { id: "I.23", question: "Giáo dục STEM giúp học sinh kết nối điều gì?", options: ["Kiến thức nhà trường với thực tiễn.", "Lí thuyết suông với học thuộc lòng.", "Trò chơi điện tử với bạo lực học đường.", "Điểm số cá nhân với tiền bạc."], correctAnswer: 0, explanation: "STEM giúp thu hẹp khoảng cách giữa lí thuyết học đường và thực tiễn đời sống." },
-        { id: "I.24", question: "Phát biểu nào sau đây là ĐÚNG về giáo dục STEM?", options: ["Là phương thức giáo dục tích hợp liên môn.", "Chỉ là phong trào hình thức tạm thời.", "Thay thế hoàn toàn các môn khoa học xã hội.", "Không cần sự chuẩn bị kế hoạch bài dạy."], correctAnswer: 0, explanation: "Giáo dục STEM là phương thức giáo dục tích hợp liên môn nhằm phát triển năng lực người học." }
-      ],
-      truefalse: [
-        { id: "II.1", context: "Về khái niệm cơ bản của giáo dục STEM:", statements: [{ text: "STEM là phương thức giáo dục tích hợp liên môn.", correct: true }, { text: "Giáo dục STEM tách rời hoàn toàn bốn lĩnh vực độc lập.", correct: false }, { text: "STEM giúp học sinh ứng dụng kiến thức giải quyết thực tiễn.", correct: true }, { text: "Mục tiêu STEM là loại bỏ các môn khoa học tự nhiên.", correct: false }], explanation: "Ý a, c đúng vì STEM mang tính tích hợp và gắn liền thực tiễn; ý b, d sai vì STEM liên kết các môn chứ không loại bỏ." },
-        { id: "II.2", context: "Về các mức độ tổ chức giáo dục STEM:", statements: [{ text: "Mức độ trải nghiệm giúp học sinh quan sát, khám phá hiện tượng.", correct: true }, { text: "Mức độ thiết kế kĩ thuật yêu cầu tạo ra sản phẩm giải quyết vấn đề.", correct: true }, { text: "Mọi bài học STEM đều có chung một mức độ đơn giản.", correct: false }, { text: "Phân chia mức độ giúp giáo viên thiết kế bài dạy phù hợp.", correct: true }], explanation: "Ý c sai vì STEM có các mức độ từ trải nghiệm đến thiết kế kĩ thuật với độ phức tạp khác nhau." },
-        { id: "II.3", context: "Về tiến trình thiết kế kĩ thuật trong STEM:", statements: [{ text: "Bước đầu tiên là xác định vấn đề và tiêu chí sản phẩm.", correct: true }, { text: "Học sinh có thể chế tạo ngay mà không cần tìm hiểu kiến thức.", correct: false }, { text: "Thử nghiệm và cải tiến giúp hoàn thiện sản phẩm học tập.", correct: true }, { text: "Progress thiết kế kĩ thuật không tuân theo quy luật tư duy nào.", correct: false }], explanation: "Ý b sai vì cần có kiến thức nền; ý d sai vì tiến trình tuân thủ tư duy khoa học chặt chẽ." },
-        { id: "II.4", context: "Về vai trò các môn học trong STEM:", statements: [{ text: "Toán học cung cấp công cụ tính toán và đo đạc.", correct: true }, { text: "Khoa học tự nhiên cung cấp nguyên lí, định luật nền tảng.", correct: true }, { text: "Công nghệ hướng dẫn quy trình chế tạo sản phẩm.", correct: true }, { text: "Các môn học hoạt động đơn lẻ không liên quan nhau.", correct: false }], explanation: "Ý d sai vì các lĩnh vực trong STEM có sự liên kết chặt chẽ với nhau." },
-        { id: "II.5", context: "Về công tác đánh giá học sinh trong STEM:", statements: [{ text: "Chỉ đánh giá duy nhất qua bài thi viết lí thuyết.", correct: false }, { text: "Đánh giá toàn quá trình và sản phẩm thực tế của học sinh.", correct: true }, { text: "Sử dụng bảng tiêu chí rubrics để đánh giá khách quan.", correct: true }, { text: "Không cần tiêu chí đánh giá sản phẩm rõ ràng.", correct: false }], explanation: "Ý a, d sai vì đánh giá STEM cần toàn diện quá trình, sản phẩm và phải có tiêu chí rõ ràng." },
-        { id: "II.6", context: "Về điều kiện thực hiện giáo dục STEM:", statements: [{ text: "Có thể sử dụng vật liệu tái chế, chi phí thấp.", correct: true }, { text: "Bắt buộc phải có phòng thí nghiệm robot tỷ đô.", correct: false }, { text: "Sự sáng tạo của giáo viên là yếu tố quan trọng.", correct: true }, { text: "Địa phương khó khăn không thể triển khai STEM.", correct: false }], explanation: "Ý b, d sai vì STEM rất linh hoạt, tận dụng vật liệu địa phương và không bắt buộc thiết bị đắt tiền." },
-        { id: "II.7", context: "Về ý nghĩa của STEM đối với học sinh:", statements: [{ text: "Phát triển năng lực giải quyết vấn đề thực tiễn.", correct: true }, { text: "Rèn luyện kĩ năng làm việc nhóm và giao tiếp.", correct: true }, { text: "Làm giảm sút năng lực tư duy sáng tạo của học sinh.", correct: false }, { text: "Kích thích niềm đam mê khoa học kĩ thuật.", correct: true }], explanation: "Ý c sai vì STEM thúc đẩy mạnh mẽ tư duy sáng tạo và hứng thú học tập." },
-        { id: "II.8", context: "Về vai trò của giáo viên trong lớp học STEM:", statements: [{ text: "Chuyển từ truyền thụ sang người định hướng, hỗ trợ.", correct: true }, { text: "Làm thay mọi việc khó khăn thay cho học sinh.", correct: false }, { text: "Khích lệ học sinh tự khám phá, chế tạo sản phẩm.", correct: true }, { text: "Áp đặt duy nhất một cách làm rập khuôn.", correct: false }], explanation: "Ý b, d sai vì giáo viên chỉ hỗ trợ định hướng, học sinh phải chủ động và sáng tạo." }
-      ],
-      short: [
-        { id: "III.1", question: "Cho các nhận định sau về các lĩnh vực cấu thành STEM:\n1. STEM viết tắt của Khoa học, Công nghệ, Kĩ thuật, Toán học.\n2. Giáo dục STEM loại bỏ hoàn toàn các môn tự nhiên.\n3. Bản chất STEM là tiếp cận liên môn giải quyết thực tiễn.\n4. Mục tiêu STEM là nhồi nhét lí thuyết hàn lâm.\n5. Toán học đóng vai trò công cụ định lượng trong STEM.\n6. Sản phẩm STEM bắt buộc phải mua linh kiện ngoại.\n7. STEM góp phần phát triển năng lực học sinh.\n8. Giáo dục STEM chỉ là hoạt động ngoại khóa đơn thuần.", answer: "1357", explanation: "Các nhận định đúng là 1, 3, 5, 7." },
-        { id: "III.2", question: "Cho các nhận định sau về các mức độ tổ chức STEM:\n1. Mức độ trải nghiệm giúp quan sát hiện tượng tự nhiên.\n2. Mức độ thiết kế kĩ thuật yêu cầu chế tạo sản phẩm.\n3. Tất cả bài học STEM chỉ có một mức độ duy nhất.\n4. Lồng ghép chính khóa là hình thức triển khai phổ biến.\n5. Không cần chọn mức độ phù hợp với đối tượng học sinh.\n6. Mức độ thiết kế đòi hỏi tích hợp kiến thức liên môn.\n7. Hoạt động STEM chỉ tổ chức ngoài hè ở ngoài trường.\n8. Phân loại mức độ giúp lập kế hoạch dạy học tốt hơn.", answer: "1246", explanation: "Các nhận định đúng là 1, 2, 4, 6." },
-        { id: "III.3", question: "Ngày 14/8/2020, Bộ GD&ĐT đã ban hành Công văn về việc triển khai thực hiện giáo dục STEM trong trường trung học, đó là công văn số mấy?", answer: "3098", explanation: "Công văn số 3098/BGDĐT-GDTrH hướng dẫn thực hiện giáo dục STEM trong giáo dục trung học." },
-        { id: "III.4", question: "Cho các nhận định sau về vai trò giáo viên và học sinh:\n1. Giáo viên là người định hướng, hỗ trợ, cố vấn.\n2. Học sinh chủ động khám phá và làm việc nhóm.\n3. Giáo viên làm thay toàn bộ các công đoạn khó.\n4. Học sinh được đưa ra nhiều giải pháp sáng tạo.\n5. Lớp học STEM khuyến khích tranh luận, phản biện.\n6. Giáo viên bắt học sinh sao chép y hệt một cách làm.\n7. Học sinh tự đánh giá và đánh giá chéo sản phẩm.\n8. Giáo viên chỉ chấm điểm giấy cuối kì duy nhất.", answer: "1245", explanation: "Các nhận định đúng là 1, 2, 4, 5." },
-        { id: "III.5", question: "Cho các nhận định sau về kiểm tra, đánh giá trong STEM:\n1. Đánh giá toàn diện cả quá trình và sản phẩm.\n2. Chỉ dùng bài thi tự luận viết tay truyền thống.\n3. Sử dụng rubrics là công cụ đánh giá hiệu quả.\n4. Đánh giá thái độ làm việc nhóm của học sinh.\n5. Tiêu chí đánh giá cần rõ ràng và công khai.\n6. Giáo viên chấm điểm dựa vào cảm tính cá nhân.\n7. Khuyến khích tự đánh giá và đánh giá đồng đẳng.\n8. Kết quả đánh giá không có giá trị phản hồi.", answer: "1345", explanation: "Các nhận định đúng là 1, 3, 4, 5." },
-        { id: "III.6", question: "Cho các nhận định sau về vật liệu và điều kiện STEM:\n1. Có thể dùng vật liệu tái chế, chi phí thấp.\n2. Bắt buộc phải có phòng lab robot đắt tiền.\n3. Tận dụng vật dụng sinh hoạt hằng ngày làm học liệu.\n4. Sự sáng tạo của giáo viên là yếu tố quyết định.\n5. Địa phương khó khăn không thể triển khai STEM.\n6. Công nghệ thông tin hỗ trợ đắc lực cho bài học.\n7. Huy động nguồn lực xã hội hóa từ phụ huynh.\n8. Học sinh cấm mang vật liệu từ nhà đến lớp.", answer: "1346", explanation: "Các nhận định đúng là 1, 3, 4, 6." },
-        { id: "III.7", question: "Cho các nhận định sau về ý nghĩa của giáo dục STEM:\n1. Phát triển phẩm chất và năng lực học sinh.\n2. Vận dụng kiến thức liên môn giải quyết thực tiễn.\n3. Biến học sinh thành cỗ máy ghi nhớ máy móc.\n4. Rèn luyện kĩ năng mềm: làm việc nhóm, phản biện.\n5. Kích thích đam mê nghiên cứu khoa học kĩ thuật.\n6. Làm giảm sút học tập văn hóa trên lớp.\n7. Tạo cơ hội hiện thực hóa ý tưởng sáng tạo.\n8. Gây áp lực tâm lí căng thẳng quá mức cho học sinh.", answer: "1245", explanation: "Các nhận định đúng là 1, 2, 4, 5." },
-        { id: "III.8", question: "Ngày 26/12/2018, lần đầu tiên, Bộ GD&ĐT đưa khái niệm giáo dục STEM vào trong chương trình giáo dục phổ thông, đó là thông tư số mấy?", answer: "32", explanation: "Thông tư số 32/2018/TT-BGDĐT ban hành Chương trình giáo dục phổ thông mới, lần đầu chính thức đưa giáo dục STEM vào chương trình." }
-      ]
-    };
-
-    // Chuẩn hóa dữ liệu sang cấu trúc game
-    const BANK_MCQ = RAW_BANK.mcq.map(item => ({ q: item.question, a: item.options, c: item.correctAnswer, ex: item.explanation }));
-    const BANK_TF = RAW_BANK.truefalse.map(item => ({ q: item.context, items: item.statements.map(s => s.text), c: item.statements.map(s => s.correct), ex: item.explanation }));
-    const BANK_SHORT = RAW_BANK.short.map(item => ({ q: item.question, c: item.answer, ex: item.explanation }));
-
-    // --- STATE MANAGER ---
-    let state_data = {
-        user: { name: '', sbd: '', class: '', school: '', mcImg: '', playerImg: '' },
-        mode: '', questions: [], currentIdx: 0, score: 0, timer: 180, timerRef: null,
-        startTime: null, duration: 0, helps: { '5050': false, 'audience': false, 'call': false, 'expert': false },
-        isOver: false, adminData: [], userAnswers: Array(20).fill(null), targetDelId: null
-    };
-
-    // --- SYSTEM LOGIC ---
-    function renderLadder() {
-        const container = document.getElementById('ladder-container'); 
-        if(!container) return; container.innerHTML = '';
-        const scores = [1,2,3,4,5,5.4,5.8,6.2,6.6,7,7.3,7.6,7.9,8.2,8.5,8.8,9.1,9.4,9.7,10];
-        scores.forEach((s, i) => {
-            const div = document.createElement('div');
-            div.className = `ladder-row ${[4,9,19].includes(i) ? 'active' : ''}`;
-            div.id = `lad-${i}`; div.innerHTML = `<span>${i+1}</span><span>${s.toFixed(1)}</span>`;
-            container.appendChild(div);
-        });
-    }
-
-    function renderExamNav() {
-        const grid = document.getElementById('exam-grid'); 
-        if(!grid) return; grid.innerHTML = '';
-        for(let i=0; i<20; i++) {
-            const node = document.createElement('div');
-            node.className = `exam-node ${state_data.userAnswers[i] !== null ? 'done' : ''} ${state_data.currentIdx === i ? 'current' : ''}`;
-            node.innerText = i+1; node.onclick = () => { playPing(); state_data.currentIdx = i; loadQ(); };
-            grid.appendChild(node);
-        }
-    }
-
-    function loadQ() {
-        const q = state_data.questions[state_data.currentIdx];
-        if(!q) return;
-        document.getElementById('q-number').innerText = `CÂU ${state_data.currentIdx + 1}`;
-        document.getElementById('q-score-ui').innerText = `ĐIỂM: ${state_data.score.toFixed(1)}`;
-        document.getElementById('q-text').innerText = q.q;
-        document.getElementById('q-hint-box')?.classList.add('hidden');
-        document.getElementById('btn-submit')?.classList.remove('hidden');
-        document.getElementById('btn-next')?.classList.add('hidden');
-        document.getElementById('h-expert').classList.toggle('hidden', state_data.currentIdx < 12);
-        document.getElementById('btn-stop').classList.toggle('hidden', state_data.currentIdx < 5 || state_data.mode === 'KIEM_TRA');
-        const opts = document.getElementById('q-options'); opts.innerHTML = '';
-        
-        if (state_data.currentIdx < 12) {
-            q.a.forEach((opt, i) => {
-                const btn = document.createElement('button');
-                btn.className = `option-btn ${q.userChoice === i ? 'option-selected' : ''}`;
-                btn.innerHTML = `<span class="gold-text mr-3 font-black text-xs text-white">${String.fromCharCode(65+i)}.</span> ${opt}`;
-                btn.onclick = () => { playPing(); document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('option-selected')); btn.classList.add('option-selected'); q.userChoice = i; };
-                opts.appendChild(btn);
-            });
-        } else if (state_data.currentIdx < 16) {
-            if(!q.userChoice) q.userChoice = [null, null, null, null];
-            q.items.forEach((item, i) => {
-                const row = document.createElement('div');
-                row.className = 'p-2 glass rounded-xl flex items-center justify-between gap-1';
-                row.innerHTML = `<span class="flex-1 text-white text-sm font-bold text-left font-black">${String.fromCharCode(97+i)}) ${item}</span>
-                <div class="flex gap-1 shrink-0">
-                    <button id="tf-${i}-t" onclick="window.setTF(${i}, true)" style="font-size: 10pt !important;" class="tf-btn ${q.userChoice[i] === true ? 'bg-green-600' : 'bg-white/10'} text-white">ĐÚNG</button>
-                   <button id="tf-${i}-f" onclick="window.setTF(${i}, false)" style="font-size: 10pt !important;" class="tf-btn ${q.userChoice[i] === false ? 'bg-red-600' : 'bg-white/10'} text-white">SAI</button>
-                </div>`;
-                opts.appendChild(row);
-            });
-        } else {
-            const wrap = document.createElement('div');
-            wrap.className = 'flex flex-col items-center space-y-4';
-            wrap.innerHTML = `<p class="text-[10px] gold-text italic font-black text-center text-white">Nhập từ trái sang phải, nếu đáp án có dưới 4 kí tự thì các ô sau để trống; nếu là số thập phân thì nhập dấu phẩy (,), ví dụ 0,52</p>
-            <div class="flex gap-2">
-                <input type="text" maxlength="1" class="digit-box" oninput="if(this.value && this.nextElementSibling) this.nextElementSibling.focus()" value="${q.userVal?.[0]||''}">
-                <input type="text" maxlength="1" class="digit-box" oninput="if(this.value && this.nextElementSibling) this.nextElementSibling.focus()" value="${q.userVal?.[1]||''}">
-                <input type="text" maxlength="1" class="digit-box" oninput="if(this.value && this.nextElementSibling) this.nextElementSibling.focus()" value="${q.userVal?.[2]||''}">
-                <input type="text" maxlength="1" class="digit-box" value="${q.userVal?.[3]||''}">
-            </div>`;
-            opts.appendChild(wrap);
-        }
-        
-        if(state_data.mode !== 'KIEM_TRA') {
-            document.querySelectorAll('.ladder-row').forEach(r => r.classList.remove('active'));
-            document.getElementById(`lad-${state_data.currentIdx}`)?.classList.add('active');
-        } else renderExamNav();
-        startTimer();
-        if (window.MathJax) MathJax.typesetPromise();
-    }
-
-    async function finishGame() {
-        if (state_data.mode === 'KIEM_TRA' && state_data.userAnswers.filter(a => a !== null).length < 20) return alert("Em chưa làm đủ 20 câu!");
-        state_data.isOver = true; clearInterval(state_data.timerRef);
-        document.getElementById('screen-game')?.classList.add('hidden');
-        document.getElementById('screen-result')?.classList.remove('hidden');
-        
-        const isEx = state_data.mode === 'KIEM_TRA';
-        if(isEx) state_data.score = state_data.userAnswers.reduce((sum, item) => sum + (item ? item.earned : 0), 0);
-        
-        const final = Math.min(10.0, Math.round(state_data.score * 10) / 10);
-        const resScore = document.getElementById('res-score');
-        if(resScore) resScore.innerText = final.toFixed(1);
-        
-        const resRank = document.getElementById('res-rank');
-        let rank = final >= 9 ? "XUẤT SẮC" : (final >= 8 ? "TỐT" : (final >= 5 ? "KHÁ" : (final >= 3.5 ? "ĐẠT" : "CHƯA ĐẠT")));
-        if(resRank) resRank.innerText = rank;
-        
-        const resSum = document.getElementById('res-summary');
-        if(resSum) resSum.innerHTML = `Chúc mừng Triệu phú tri thức <b>${state_data.user.name}</b>, SBD: ${state_data.user.sbd}, lớp ${state_data.user.class}, trường ${state_data.user.school}, ${final.toFixed(1)} điểm, xếp loại ${rank}.`;
-        
-        if(isEx) {
-            document.getElementById('scratch-msg').classList.remove('hidden');
-            document.getElementById('scratch-card-wrapper').classList.remove('hidden');
-            initScratchCard();
-        } else {
-            document.getElementById('scratch-card-wrapper').classList.remove('hidden');
-            document.getElementById('result-info-box').style.opacity = "1";
-            document.getElementById('btn-show-hist')?.classList.remove('hidden');
-            const canvas = document.getElementById('scratch-canvas');
-            if(canvas) canvas.style.display = 'none';
-        }
-        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'results'), { 
-            ...state_data.user, 
-            score: final, 
-            mode: state_data.mode, 
-            duration: Math.floor((new Date() - state_data.startTime) / 1000), 
-            timestamp: serverTimestamp() 
-        });
-    }
-
-    function initScratchCard() {
-        const wrapper = document.getElementById('scratch-card-wrapper');
-        const canvas = document.getElementById('scratch-canvas');
-        const infoBox = document.getElementById('result-info-box');
-        if(!canvas || !infoBox) return;
-        
-        infoBox.style.opacity = "0";
-        const ctx = canvas.getContext('2d');
-        const rect = infoBox.getBoundingClientRect();
-        canvas.width = rect.width;
-        canvas.height = rect.height;
-        
-        ctx.fillStyle = '#94a3b8'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.font = 'bold 16px Roboto'; ctx.fillStyle = '#1e293b'; ctx.textAlign = 'center';
-        ctx.fillText('CÀO ĐỂ XEM ĐIỂM SỐ', canvas.width/2, canvas.height/2 + 5);
-        let drawing = false;
-        const totalPixels = canvas.width * canvas.height;
-        const scratch = (e) => {
-            if(!drawing) return;
-            const r = canvas.getBoundingClientRect();
-            const x = (e.clientX || (e.touches && e.touches[0].clientX)) - r.left;
-            const y = (e.clientY || (e.touches && e.touches[0].clientY)) - r.top;
-            ctx.globalCompositeOperation = 'destination-out'; ctx.beginPath(); ctx.arc(x, y, 25, 0, 6.3); ctx.fill();
-            
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            let count = 0; for(let i = 3; i < imageData.data.length; i += 4) { if(imageData.data[i] === 0) count++; }
-            const ratio = count / totalPixels;
-            
-            infoBox.style.opacity = Math.min(1, ratio * 2);
-            if(ratio > 0.45) document.getElementById('btn-show-hist')?.classList.remove('hidden');
+<!-- MÃ NGUỒN ỔN ĐỊNH NHẤT - FULL 100% -->
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> TÌM HIỂU GIÁO DỤC STEM </title>
+    <!-- Hỗ trợ công thức Toán/Lí -->
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']], displayMath: [['$$', '$$']] },
+            svg: { fontCache: 'global' }
         };
-        canvas.addEventListener('mousedown', () => drawing = true);
-        canvas.addEventListener('mouseup', () => drawing = false);
-        canvas.addEventListener('mousemove', scratch);
-        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); drawing = true; });
-        canvas.addEventListener('touchend', () => drawing = false);
-        canvas.addEventListener('touchmove', scratch);
-    }
-
-    function startTimer() {
-        clearInterval(state_data.timerRef); state_data.timer = 180;
-        state_data.timerRef = setInterval(() => {
-            state_data.timer--; 
-            const el = document.getElementById('ui-timer');
-            if(el) el.innerText = `${state_data.timer}s`;
-            if (state_data.timer <= 0) { clearInterval(state_data.timerRef); finishGame(); }
-        }, 1000);
-    }
-
-    // --- WINDOW ATTACH ---
-    Object.assign(window, {
-        showModal: (id) => { playPing(); document.getElementById(id)?.classList.remove('hidden'); },
-        hideModal: (id) => { playPing(); document.getElementById(id)?.classList.add('hidden'); },
-        closeMilestone: () => { playPing(); document.getElementById('milestone-modal')?.classList.add('hidden'); },
-        confirmStop: () => { playPing(); if(confirm("Dừng cuộc chơi để bảo toàn điểm?")) finishGame(); },
-        enterNext: (e, nextId) => { if (e.key === 'Enter') { e.preventDefault(); document.getElementById(nextId)?.focus(); playPing(); } },
-        previewImg: async (input, targetId, type) => {
-            if (input.files?.[0]) {
-                const reader = new FileReader(); reader.onload = async e => {
-                    const compressed = await compressImage(e.target.result); document.getElementById(targetId).src = compressed;
-                    if(type === 'mc') state_data.user.mcImg = compressed; else state_data.user.playerImg = compressed;
-                }; reader.readAsDataURL(input.files[0]);
-            }
-        },
-        startGame: (mode) => {
-            playPing();
-            const n = document.getElementById('in-name').value, s = document.getElementById('in-sbd').value, c = document.getElementById('in-class').value, sc = document.getElementById('in-school').value;
-            if (!n || !s || !c || !sc) return alert("Em hãy nhập đủ thông tin nhé!");
-            state_data.user = { name: n, sbd: s, class: c, school: sc, mcImg: document.getElementById('view-mc').src, playerImg: document.getElementById('view-player').src };
-            localStorage.setItem('mil_v3_user_save_pro', JSON.stringify(state_data.user));
-            state_data.mode = mode; state_data.startTime = new Date(); state_data.userAnswers = Array(20).fill(null); state_data.currentIdx = 0; state_data.score = 0;
-            
-            const q1 = shuffleArray(BANK_MCQ).slice(0, 12).map(q => { 
-                const o = q.a.map((v, i) => ({v, isCorrect: i === q.c})); 
-                const shuffledO = shuffleArray(o); 
-                return {...q, a: shuffledO.map(x => x.v), c: shuffledO.findIndex(x => x.isCorrect)}; 
-            });
-            state_data.questions = [...q1, ...shuffleArray(BANK_TF).slice(0, 4), ...shuffleArray(BANK_SHORT).slice(0, 4)];
-            
-            if (mode === 'KIEM_TRA' || mode === 'GHE_NONG') {
-                try {
-                    const d = document.documentElement;
-                    if(d.requestFullscreen) d.requestFullscreen().catch(()=>{});
-                    else if(d.webkitRequestFullscreen) d.webkitRequestFullscreen().catch(()=>{});
-                } catch(e) {}
-            }
-            document.getElementById('screen-home')?.classList.add('hidden');
-            document.getElementById('screen-game')?.classList.remove('hidden');
-            document.getElementById('ui-p-name').innerText = n; document.getElementById('ui-p-info').innerText = `${s} | ${c} | ${sc}`;
-            document.getElementById('game-mc-img').src = state_data.user.mcImg; document.getElementById('game-player-img').src = state_data.user.playerImg;
-            const isEx = mode === 'KIEM_TRA';
-            document.getElementById('help-btns').classList.toggle('hidden', isEx);
-            document.getElementById('ladder-container').classList.toggle('hidden', isEx);
-            document.getElementById('exam-nav').classList.toggle('hidden', !isEx);
-            document.getElementById('q-score-ui').classList.toggle('hidden', isEx);
-            if(!isEx) renderLadder(); else renderExamNav();
-            loadQ();
-        },
-        useHelp: (type) => {
-            if(state_data.helps[type]) return; state_data.helps[type] = true; playPing();
-            document.getElementById(`h-${type}`).classList.add('opacity-30', 'grayscale');
-            const q = state_data.questions[state_data.currentIdx], box = document.getElementById('q-hint-box'); box.classList.remove('hidden');
-            if(type === '5050' && state_data.currentIdx < 12) {
-                const btns = document.querySelectorAll('.option-btn'); let count = 0;
-                [0,1,2,3].sort(()=>Math.random()-0.5).forEach(i => { if(i !== q.c && count < 2) { btns[i].style.visibility = 'hidden'; count++; } });
-            } else {
-                const currentLetter = String.fromCharCode(65 + q.c);
-                const advice = q.ex ? q.ex.replace(/Phương án [A-D] ĐÚNG/g, `Phương án ${currentLetter} ĐÚNG`) : "Hãy suy nghĩ kỹ dựa trên kiến thức đã học!";
-                box.innerHTML = `<b class="text-yellow-400 uppercase text-[10pt]">Trợ giúp giáo khoa:</b><br>${advice}`;
-            }
-        },
-        setTF: (idx, val) => { playPing(); state_data.questions[state_data.currentIdx].userChoice[idx] = val; loadQ(); },
-        submitAns: () => {
-            playPing(); const q = state_data.questions[state_data.currentIdx]; let earned = 0, isCorrect = false;
-            const ladderScores = [1,2,3,4,5,5.4,5.8,6.2,6.6,7,7.3,7.6,7.9,8.2,8.5,8.8,9.1,9.4,9.7,10.0];
-            if (state_data.currentIdx < 12) {
-                if (q.userChoice === undefined) return alert("Chọn đáp án!");
-                isCorrect = (q.userChoice === q.c);
-                earned = isCorrect ? (state_data.mode === 'KIEM_TRA' ? 0.4 : (ladderScores[state_data.currentIdx] - (state_data.currentIdx > 0 ? ladderScores[state_data.currentIdx-1] : 0))) : 0;
-            } else if (state_data.currentIdx < 16) {
-                if (!q.userChoice || q.userChoice.includes(null)) return alert("Hãy hoàn thành đủ 4 ý!");
-                let hits = 0; q.userChoice.forEach((v, i) => { if(v === q.c[i]) hits++; });
-                if (state_data.mode === 'KIEM_TRA') earned = [0, 0.2, 0.4, 0.6, 0.8][hits];
-                else earned = (hits === 4) ? (ladderScores[state_data.currentIdx] - (state_data.currentIdx > 0 ? ladderScores[state_data.currentIdx-1] : 0)) : 0;
-                isCorrect = (hits === 4);
-            } else {
-                const val = Array.from(document.querySelectorAll('.digit-box')).map(i => i.value).join('').replace('.', ',');
-                if (!val) return alert("Hãy nhập kết quả!");
-                q.userVal = val; isCorrect = (val === q.c);
-                earned = isCorrect ? (state_data.mode === 'KIEM_TRA' ? 0.5 : (ladderScores[state_data.currentIdx] - (state_data.currentIdx > 0 ? ladderScores[state_data.currentIdx-1] : 0))) : 0;
-            }
-            state_data.userAnswers[state_data.currentIdx] = { earned, isCorrect, userChoice: q.userChoice, userVal: q.userVal };
-            if (state_data.mode === 'KIEM_TRA') { if(state_data.currentIdx >= 19) finishGame(); else { state_data.currentIdx++; loadQ(); } }
-            else { if (!isCorrect) { const btns = document.querySelectorAll('.option-btn'); if(btns[q.c])btns[q.c].classList.add('option-correct'); if(btns[q.userChoice])btns[q.userChoice].classList.add('option-wrong'); setTimeout(finishGame, 1500); } 
-                else { state_data.score = ladderScores[state_data.currentIdx]; if(state_data.currentIdx === 19) finishGame(); else { 
-                    if(state_data.currentIdx==4||state_data.currentIdx==9){
-                        const h_txt = state_data.currentIdx==4?"Người thân & Khán giả":"Chuyên gia";
-                        document.getElementById('ms-text').innerHTML = `Vượt qua câu ${state_data.currentIdx+1}, bạn đã giành được ${state_data.score.toFixed(1)} điểm và nhận thêm sự trợ giúp từ ${h_txt}.`;
-                        window.showModal('milestone-modal');
-                    }
-                    document.getElementById('btn-submit').classList.add('hidden'); document.getElementById('btn-next').classList.remove('hidden'); 
-                } } }
-        },
-        nextQ: () => { playPing(); if(state_data.currentIdx < 19) { state_data.currentIdx++; loadQ(); } },
-        checkAdmin: () => { if(document.getElementById('admin-pass').value === '112233@@') { window.hideModal('modal-login'); showAdmin(); } else alert("Sai!"); },
-        exportExcel: () => { 
-            const dataToExport = state_data.adminData.map((d, i) => ({ "STT": i+1, "SBD": d.sbd, "Họ Tên": d.name, "Lớp": d.class, "Trường": d.school, "Chế độ": d.mode, "Điểm": d.score, "Thời gian làm bài (giây)": d.duration, "Nộp Lúc": d.timeStr }));
-            const ws = XLSX.utils.json_to_sheet(dataToExport); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "KetQua"); XLSX.writeFile(wb, "ket_qua_edu30.xlsx"); 
-        },
-        deleteRes: (id) => { playPing(); state_data.targetDelId = id; document.getElementById('modal-delete-confirm').classList.remove('hidden'); },
-        cancelDelete: () => { playPing(); document.getElementById('modal-delete-confirm').classList.add('hidden'); state_data.targetDelId = null; },
-        confirmDelete: async () => { if(document.getElementById('delete-pass-input').value === 'Admin123@') { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'results', state_data.targetDelId)); window.cancelDelete(); showAdmin(); } else alert("Sai!"); },
-        showHistory: () => {
-            const list = document.getElementById('history-list'); if(!list) return; list.innerHTML = '';
-            state_data.questions.forEach((q, i) => { const ua = state_data.userAnswers[i]; if(!ua) return;
-                const div = document.createElement('div'); div.className = `p-5 glass rounded-3xl border-l-8 ${ua.isCorrect ? 'border-green-500' : 'border-red-500'} mb-6 text-black bg-white shadow-lg text-left`;
-                const currentLetter = String.fromCharCode(65 + q.c);
-                const adviceFixed = q.ex ? q.ex.replace(/Phương án [A-D] ĐÚNG/g, `Phương án ${currentLetter} ĐÚNG`) : "";
-                let h = `<div class="text-[9px] font-black uppercase mb-2 text-slate-400">CÂU ${i+1} (${ua.earned.toFixed(2)}đ)</div><div class="text-sm font-bold mb-4 text-left text-black font-black">${q.q}</div>`;
-                if (i < 12) h += `<div class="space-y-2">` + q.a.map((o, idx) => `<div class="p-3 rounded-xl border-2 ${idx === q.c ? 'bg-green-50 border-green-500' : (idx === ua.userChoice ? 'bg-red-50 border-red-500' : 'bg-slate-50')} text-xs font-bold text-left text-black font-black">${o}</div>`).join('') + `</div>`;
-                else if (i < 16) h += `<div class="space-y-2">` + q.items.map((it, idx) => `<div class="p-2 border-b text-xs ${ua.userChoice[idx] === q.c[idx] ? 'text-green-600' : 'text-red-600'} font-bold text-left font-black">${it} → <span class="uppercase">${ua.userChoice[idx]?'ĐÚNG':'SAI'}</span></div>`).join('') + `</div>`;
-                else h += `<div class="p-4 bg-slate-100 rounded-xl mb-4 text-xs font-black text-black text-left text-black font-black">BẠN NHẬP: ${ua.userVal} | ĐÁP ÁN: ${q.c}</div>`;
-                h += `<div class="p-3 bg-blue-50 rounded-xl text-xs italic text-blue-800 text-left font-black"><b>PHÂN TÍCH:</b> ${adviceFixed}</div>`;
-                div.innerHTML = h; list.appendChild(div);
-            });
-            window.showModal('modal-history');
-        },
-        sortAdmin: (key) => { state_data.adminData.sort((a, b) => (a[key] > b[key] ? 1 : -1)); renderAdminTable(); },
-        showStats: async () => {
-            let c = {XS:0,T:0,K:0,D:0,CD:0,tt:state_data.adminData.length}; state_data.adminData.forEach(d => { if(d.score >= 9) c.XS++; else if(d.score >= 8) c.T++; else if(d.score >= 5) c.K++; else if(d.score >= 3.5) c.D++; else c.CD++; });
-            const labels = {XS:'Xuất sắc',T:'Tốt',K:'Khá',D:'Đạt',CD:'Chưa đạt'}, colors = {XS:'bg-yellow-400',T:'bg-green-500',K:'bg-blue-500',D:'bg-orange-500',CD:'bg-red-600'};
-            document.getElementById('stats-bars').innerHTML = Object.keys(labels).map(k => { const p = (c[k]/(c.tt || 1) * 100).toFixed(1); return `<div class="mb-4 text-black"><div class="flex justify-between text-xs font-black text-left"><span>${labels[k]}</span><span>${p}%</span></div><div class="h-3 bg-slate-200 rounded-full overflow-hidden"><div class="${colors[k]} h-full transition-all duration-1000" style="width:${p}%"></div></div></div>`; }).join('');
-            window.showModal('modal-stats');
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- Thư viện hiệu ứng và tiện ích -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <style>
+        :root {
+            --primary: #1e40af; --secondary: #3b82f6; --success: #10b981; --danger: #ef4444; 
+            --bg: #0f172a; --card: #ffffff; --text: #1e293b; --accent: #f59e0b;
         }
-    });
-
-    async function showAdmin() {
-        document.getElementById('screen-home')?.classList.add('hidden');
-        document.getElementById('screen-admin')?.classList.remove('hidden');
-        const snap = await getDocs(query(collection(db, 'artifacts', appId, 'public', 'data', 'results')));
-        state_data.adminData = []; snap.forEach(d => { const dt = d.data(); state_data.adminData.push({ id: d.id, ...dt, timeStr: dt.timestamp ? dt.timestamp.toDate().toLocaleString('vi-VN') : 'N/A' }); });
-        renderAdminTable();
-    }
-
-    function renderAdminTable() {
-        const tbody = document.getElementById('admin-tbody'); if(!tbody) return; tbody.innerHTML = '';
-        state_data.adminData.forEach((d, i) => { tbody.innerHTML += `<tr class="hover:bg-blue-50 text-[6.5px]"><td>${d.sbd}</td><td class="text-left font-bold text-blue-800">${d.name}</td><td>${d.class||''}</td><td>${d.school||''}</td><td class="font-black text-red-600">${(d.score || 0).toFixed(1)}</td><td><button onclick="window.deleteRes('${d.id}')" class="bg-red-600 text-white w-5 h-5 rounded-full font-black text-[7px]">X</button></td></tr>`; });
-    }
-
-    // --- STARTUP ---
-    signInAnonymously(auth);
-    onAuthStateChanged(auth, u => {
-        const saved = localStorage.getItem('mil_v3_user_save_pro');
-        if (saved) {
-            const data = JSON.parse(saved);
-            if(data.name) document.getElementById('in-name').value = data.name;
-            if(data.sbd) document.getElementById('in-sbd').value = data.sbd;
-            if(data.class) document.getElementById('in-class').value = data.class;
-            if(data.school) document.getElementById('in-school').value = data.school;
-            if(data.mcImg) document.getElementById('view-mc').src = data.mcImg;
-            if(data.playerImg) document.getElementById('view-player').src = data.playerImg;
+        
+        /* CHỐNG SAO CHÉP CẤP ĐỘ CSS */
+        * {
+            -webkit-user-select: none !important;
+            -moz-user-select: none !important;
+            -ms-user-select: none !important;
+            user-select: none !important;
+            -webkit-touch-callout: none !important; 
         }
+
+        input {
+            -webkit-user-select: text !important;
+            -moz-user-select: text !important;
+            -ms-user-select: text !important;
+            user-select: text !important;
+        }
+
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
+        .container { max-width: 1100px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; position: relative; z-index: 1; }
+        
+        .q-img {
+            display: block;
+            max-width: 100%;
+            max-height: 280px;
+            margin: 15px auto;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border: 1px solid #e2e8f0;
+            background: #fff;
+        }
+
+        #custom-alert {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: var(--danger); color: white; padding: 12px 25px;
+            border-radius: 50px; font-weight: bold; z-index: 100000;
+            box-shadow: 0 10px 25px rgba(239, 68, 68, 0.4);
+            display: none; animation: slideInAlert 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid white; font-size: 0.95rem; text-transform: uppercase;
+        }
+        @keyframes slideInAlert { from { top: -50px; opacity: 0; } to { top: 20px; opacity: 1; } }
+
+        .fire-text {
+            display: inline-block; color: #fff;
+            text-shadow: 0 0 10px #ff8d00, 0 0 20px #ff4e00, 0 0 30px #d43300;
+            animation: burn 1.5s infinite alternate;
+        }
+        @keyframes burn {
+            0% { transform: skew(0.5deg); text-shadow: 0 0 10px #ff8d00, 0 0 20px #ff4e00; }
+            100% { transform: skew(-0.5deg); text-shadow: 0 0 15px #ff8d00, 0 0 35px #ff4e00, 0 0 50px #ff0000; }
+        }
+
+        header { 
+            background: rgba(30, 64, 175, 0.95); 
+    backdrop-filter: blur(5px); 
+    color: white; 
+    padding: 8px 20px; /* Đã giảm từ 15px xuống 8px */
+    display: none; 
+    justify-content: space-between; 
+    align-items: center; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.5); 
+    position: sticky; 
+    top: 0; 
+    z-index: 100; 
+}
+        .timer { background: #fee2e2; color: #dc2626; padding: 8px 20px; border-radius: 20px; font-weight: bold; border: 2px solid #ef4444; font-size: 1.1rem; }
+
+        #wish-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 10000;
+            display: none; flex-direction: column; justify-content: center; 
+            align-items: center; pointer-events: none; text-align: center;
+            overflow: hidden;
+        }
+        #fire-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        
+        .wish-content { z-index: 10001; position: relative; width: 90%; max-width: 800px; }
+        
+        .wish-title {
+            font-size: 5rem; font-weight: 900; color: #fff;
+            text-transform: uppercase; margin: 0;
+            animation: wishSharp 5s ease-out forwards;
+            text-shadow: 0 0 20px #ff4e00, 0 0 50px #ffae00;
+        }
+        .wish-sub { font-size: 1.8rem; color: #fff; margin-top: 20px; opacity: 0; animation: fadeInSub 1s forwards 0.5s; font-weight: 600; }
+        
+        .cheat-warning-box {
+            background: #ef4444; 
+            color: #fff;
+            padding: 15px 30px;
+            border-radius: 15px;
+            font-size: 1.3rem;
+            font-weight: 900;
+            border: 4px solid #facc15;
+            box-shadow: 0 0 30px rgba(239, 68, 68, 0.8);
+            margin: 40px auto 0 auto;
+            display: none;
+            z-index: 10002;
+            text-transform: uppercase;
+            animation: pulseWarning 1.2s infinite;
+            max-width: 600px;
+            line-height: 1.4;
+        }
+
+        @keyframes wishSharp {
+            0% { transform: scale(0.6); opacity: 0; }
+            15% { transform: scale(1); opacity: 1; }
+            90% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.2); opacity: 0; }
+        }
+        @keyframes fadeInSub {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulseWarning {
+            0% { transform: scale(1); background: #ef4444; }
+            50% { transform: scale(1.03); background: #dc2626; }
+            100% { transform: scale(1); background: #ef4444; }
+        }
+
+        .screen { display: none; padding: 20px; animation: fadeIn 0.4s ease; }
+        .screen.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .school-brand { 
+            text-align: center; padding: 60px 20px; 
+            background: linear-gradient(180deg, rgba(30, 64, 175, 1) 0%, rgba(15, 23, 42, 1) 100%);
+            color: white; border-radius: 0 0 50px 50px; margin-bottom: 30px;
+            border-bottom: 4px solid #ff4e00;
+        }
+        
+        .card { background: var(--card); padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); margin-bottom: 25px; border: 1px solid #e2e8f0; }
+        .section-title { background: #f1f5f9; padding: 12px 18px; border-left: 6px solid #ff4e00; font-weight: bold; margin-bottom: 20px; color: var(--primary); font-size: 1.1rem; text-transform: uppercase; }
+
+        .option { border: 2px solid #e2e8f0; border-radius: 12px; padding: 14px 20px; margin-bottom: 12px; cursor: pointer; transition: 0.3s; background: #fff; font-size: 1rem; }
+        .option.selected { border-color: #ff4e00; background: #fff7ed; font-weight: bold; }
+        .option.correct { background: #d1fae5; border-color: var(--success); color: #065f46; font-weight: bold; }
+        .option.wrong { background: #fee2e2; border-color: var(--danger); color: #991b1b; }
+        
+        .tf-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #f1f5f9; gap: 10px; }
+        .tf-btn { border: 2px solid #cbd5e0; background: white; padding: 8px 18px; border-radius: 10px; cursor: pointer; font-weight: bold; min-width: 65px; transition: 0.2s; }
+        .tf-btn.active-t { background: var(--success); color: white; border-color: var(--success); }
+        .tf-btn.active-f { background: var(--danger); color: white; border-color: var(--danger); }
+
+        .btn { padding: 12px 24px; border-radius: 12px; border: none; font-weight: 800; cursor: pointer; transition: 0.3s; text-transform: uppercase; }
+        .btn-fire { background: linear-gradient(45deg, #ff4e00, #ff8d00); color: white; box-shadow: 0 4px 15px rgba(255, 78, 0, 0.4); }
+        .btn-gray { background: #cbd5e0; color: #475569; }
+        .btn-admin-float { position: fixed; bottom: 20px; right: 20px; z-index: 1000; background: #475569; color: white; border-radius: 50px; padding: 10px 20px; font-size: 0.8rem; box-shadow: 0 4px 10px rgba(0,0,0,0.3); opacity: 0.7; cursor: pointer; border: none; }
+
+        input[type="text"], input[type="password"], input[type="number"] { padding: 15px; border: 2px solid #e2e8f0; border-radius: 12px; width: 100%; box-sizing: border-box; outline: none; transition: 0.3s; font-size: 1rem; }
+        input[type="text"]:focus, input[type="number"]:focus { border-color: #ff4e00; }
+
+        .rank-badge { font-size: 1.5rem; font-weight: 900; margin-top: 15px; padding: 10px 25px; border-radius: 50px; display: inline-block; animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); color: white; }
+        
+        .admin-controls { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; background: #f1f5f9; padding: 15px; border-radius: 15px; align-items: flex-end; }
+        .admin-table-container { overflow-x: auto; background: white; border-radius: 10px; border: 1px solid #e2e8f0; }
+        .admin-table { width: 100%; border-collapse: collapse; min-width: 1000px; }
+        .admin-table th { background: var(--primary); color: white; padding: 12px; text-align: left; font-size: 0.85rem; }
+        .admin-table td { padding: 12px; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; }
+        .stat-box { flex: 1; min-width: 130px; background: white; padding: 15px; border-radius: 15px; text-align: center; border-bottom: 4px solid #cbd5e0; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 20000; display: none; justify-content: center; align-items: center; padding: 20px; }
+        .modal-box { background: white; padding: 30px; border-radius: 25px; width: 100%; max-width: 450px; text-align: center; }
+        
+        #cheat-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 30000; display: none; justify-content: center; align-items: center; text-align: center; }
+        footer { padding: 40px 20px; text-align: center; color: #94a3b8; background: #0f172a; font-size: 0.85rem; border-top: 2px solid #1e293b; }
+
+        .badge-mode { padding: 4px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: bold; color: white; text-transform: uppercase; }
+        .badge-test { background: var(--danger); }
+        .badge-practice { background: var(--secondary); }
+
+        /* PHẦN TRẢ LỜI NGẮN 4 Ô TRỐNG */
+        .short-answer-wrapper { display: flex; gap: 12px; justify-content: center; margin: 25px 0; }
+        .char-slot { width: 50px; height: 60px; border: 3px solid #cbd5e0; border-radius: 10px; text-align: center; font-size: 1.8rem; font-weight: 900; color: var(--primary); outline: none; }
+        .char-slot:focus { border-color: var(--accent); background: #fff7ed; }
+
+        .explanation { margin-top: 15px; padding: 12px; background: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0; font-size: 0.9rem; color: #475569; line-height: 1.5; }
+        .score-badge { float: right; padding: 2px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: bold; }
+        .score-plus { background: #dcfce7; color: #166534; }
+        .score-zero { background: #fee2e2; color: #991b1b; }
+
+        @media (max-width: 640px) {
+            .wish-title { font-size: 3rem; }
+            .wish-sub { font-size: 1.3rem; }
+            .card { padding: 20px 15px; }
+            #final-score { font-size: 4rem; }
+            .tf-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+            .tf-btn { width: 100%; }
+        }
+    </style>
+</head>
+
+<body oncontextmenu="return false" oncopy="return false" oncut="return false" onpaste="return false">
+
+<!-- THÔNG BÁO TÙY CHỈNH -->
+<div id="custom-alert">⚠️ Vui lòng hoàn thành câu hỏi này!</div>
+
+<div id="wish-overlay">
+    <canvas id="fire-canvas"></canvas>
+    <div class="wish-content">
+        <h1 class="wish-title">🔥 CỐ LÊN! 🔥</h1>
+        <p class="wish-sub">Chúc bạn hoàn thành tốt bài làm!</p>
+        <div id="wish-cheat-info" class="cheat-warning-box">
+            HỆ THỐNG SẼ TỰ ĐỘNG NỘP BÀI<br>NẾU THOÁT TOÀN MÀN HÌNH HOẶC CHUYỂN TAB
+        </div>
+    </div>
+</div>
+
+<button id="btn-admin-open" class="btn-admin-float">QUẢN TRỊ 🔐</button>
+
+<div id="confirm-finish-modal" class="modal-overlay">
+    <div class="modal-box">
+        <h2 style="color: var(--primary)">Xác nhận nộp bài?</h2>
+        <p>Bạn có chắc chắn muốn kết thúc bài làm và xem kết quả ngay không?</p>
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <button id="btn-modal-cancel" class="btn btn-gray" style="flex:1">LÀM TIẾP</button>
+            <button id="btn-modal-confirm" class="btn btn-fire" style="flex:1">NỘP BÀI</button>
+        </div>
+    </div>
+</div>
+
+<div id="cheat-modal">
+    <div style="background: white; padding: 50px; border-radius: 30px; max-width: 500px; border: 10px solid var(--danger);">
+        <h1 style="color:var(--danger); font-size: 3rem; margin:0">CẢNH BÁO!</h1>
+        <p style="font-size: 1.3rem; margin: 25px 0; color: #1e293b;">Bạn đã rời khỏi cửa sổ làm bài. Hệ thống tự động nộp bài vì lí do bảo mật.</p>
+        <button id="btn-cheat-submit" class="btn btn-fire" style="width:100%;">XEM KẾT QUẢ</button>
+    </div>
+</div>
+
+<div class="container">
+    <header id="main-header" style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+    <div style="font-weight: 900; letter-spacing: 1px; color: #facc15; white-space: nowrap; font-size: 0.9rem;">
+        HUE SMART TEST 7991
+    </div>
+    
+    <div id="header-user-info" style="font-size: 0.8rem; color: #fff; font-weight: 500; text-align: center; flex-grow: 1; border-left: 2px solid rgba(255,255,255,0.2); border-right: 2px solid rgba(255,255,255,0.2); padding: 0 10px;">
+        HS: ... | SBD: ... | Lớp: ...
+    </div>
+    
+    <div class="timer" id="timer" style="font-size: 1rem; padding: 5px 15px; min-width: 80px; text-align: center;">
+        --:--
+    </div>
+</header>
+
+    <section id="screen-start" class="screen active">
+        <div class="school-brand">
+            <h1 class="fire-text" style="font-size: 2.2rem;"> TÌM HIỂU GIÁO DỤC STEM</h1>
+            <p style="color:white; opacity:0.8; margin-top:5px;">Chuyên đề: TÌM HIỂU GIÁO DỤC STEM</p>
+        </div>
+
+        <div class="card" style="max-width: 550px; margin: -40px auto 30px auto; position: relative; z-index: 2; display: block;">
+            <h3 style="text-align:center; margin-bottom: 20px; color: var(--primary);">NHẬP THÔNG TIN THÍ SINH</h3>
+            <p id="start-error" style="color: var(--danger); text-align: center; font-weight: bold; margin-bottom: 15px; display: none;">⚠️ Vui lòng điền đầy đủ các thông tin!</p>
+            <div style="margin-bottom: 15px;"><label style="font-size: 0.8rem; font-weight: bold; color: #64748b;">Họ và tên:</label><input type="text" id="username" placeholder="Nhập tên hoặc để trống (mặc định 'input')"></div>
+            <div style="margin-bottom: 15px;"><label style="font-size: 0.8rem; font-weight: bold; color: #64748b;">Trường:</label><input type="text" id="user_school" placeholder="Nhập trường hoặc để trống (mặc định 'input')"></div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div style="margin-bottom: 15px;"><label style="font-size: 0.8rem; font-weight: bold; color: #64748b;">Lớp:</label><input type="text" id="user_class" placeholder="Ví dụ: 9A1"></div>
+                <div style="margin-bottom: 25px;"><label style="font-size: 0.8rem; font-weight: bold; color: #64748b;">Số báo danh:</label><input type="text" id="user_sbd" placeholder="Ví dụ: 01"></div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <button id="btn-init-practice" class="btn btn-gray">LUYỆN TẬP</button>
+                <button id="btn-init-test" class="btn btn-fire">KIỂM TRA</button>
+            </div>
+        </div>
+    </section>
+
+    <section id="screen-quiz" class="screen">
+        <div id="quiz-content"></div>
+        <div style="display:flex; justify-content: space-between; margin-top: 30px; gap: 15px;">
+            <button id="btn-prev" class="btn btn-gray">QUAY LẠI</button>
+            <button class="btn btn-fire" id="btn-next" style="flex:1">TIẾP THEO</button>
+            <button id="btn-finish" class="btn" style="background:var(--success); color:white; display:none">HOÀN THÀNH 🏁</button>
+        </div>
+    </section>
+
+    <section id="screen-result" class="screen">
+        <div class="card" style="background: linear-gradient(135deg, #1e40af, #1e1b4b); color: white; text-align: center; padding: 40px 20px;">
+            <h2 id="res-name" class="fire-text">HỌC SINH</h2>
+            <div id="res-meta">Thông tin</div>
+            <div style="margin: 30px 0;">
+                <div id="final-score" style="font-size: 6rem; font-weight: 900; color: #fff; text-shadow: 0 0 20px rgba(255,255,255,0.5);">0.0</div>
+                <div id="my-rank-text" style="margin-top: 10px; font-weight: bold; color: #ffae00; font-size: 1.8rem;">HẠNG ...</div>
+            </div>
+            <div id="rank-container"><div id="rank-badge" class="rank-badge">XẾP LOẠI</div></div>
+        </div>
+        <div style="display:flex; flex-direction: column; gap: 15px; margin-top: 20px;">
+            <button id="btn-view-review" class="btn btn-fire">GIẢI THÍCH CHI TIẾT 📖</button>
+            <button class="btn btn-gray" onclick="location.reload()">LÀM ĐỀ KHÁC</button>
+        </div>
+        <div id="review-area" style="display:none; margin-top: 30px;">
+            <h2 id="review-heading" style="text-align:center; color: var(--primary); margin: 30px 0;">CHI TIẾT BÀI LÀM</h2>
+            <div id="review-content"></div>
+        </div>
+    </section>
+
+    <!-- Màn hình Admin -->
+    <section id="screen-admin" class="screen">
+        <div style="display:flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 class="fire-text" style="margin:0; font-size: 1.5rem;">📊 QUẢN LÍ KẾT QUẢ</h2>
+            <button id="btn-admin-close" class="btn btn-gray" style="padding: 5px 15px; font-size: 0.7rem;">THOÁT</button>
+        </div>
+        
+        <!-- CÀI ĐẶT THỜI GIAN TRONG ADMIN -->
+        <div class="card" style="padding: 15px; margin-bottom: 20px; background: #fffbeb; border: 2px solid #fcd34d;">
+            <h4 style="margin: 0 0 10px 0; color: #92400e;">⚙️ CÀI ĐẶT THỜI GIAN LÀM BÀI (PHÚT)</h4>
+            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 120px;">
+                    <label style="font-size: 0.7rem; font-weight: bold;">LUYỆN TẬP:</label>
+                    <input type="number" id="cfg-time-practice" value="45" style="padding: 8px;">
+                </div>
+                <div style="flex: 1; min-width: 120px;">
+                    <label style="font-size: 0.7rem; font-weight: bold;">KIỂM TRA:</label>
+                    <input type="number" id="cfg-time-test" value="45" style="padding: 8px;">
+                </div>
+                <button id="btn-save-config" class="btn btn-fire" style="padding: 10px 20px; font-size: 0.7rem; margin-top: 15px;">CẬP NHẬT THỜI GIAN</button>
+            </div>
+        </div>
+
+        <div class="stats-summary" id="admin-stats" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;"></div>
+        
+        <div class="admin-controls">
+            <div style="flex:1; min-width: 130px;">
+                <label style="font-size: 0.7rem; font-weight: bold;">SẮP XẾP:</label>
+                <select id="admin-sort" style="width:100%; padding:8px; border-radius:5px;">
+                    <option value="score_desc">Điểm cao nhất</option>
+                    <option value="date_new">Mới nhất</option>
+                    <option value="duration_fast">Làm nhanh nhất</option>
+                </select>
+            </div>
+            <div style="flex:1; min-width: 130px;">
+                <label style="font-size: 0.7rem; font-weight: bold;">TRƯỜNG:</label>
+                <select id="admin-filter-school" style="width:100%; padding:8px; border-radius:5px;">
+                    <option value="all">Tất cả trường</option>
+                </select>
+            </div>
+            <div style="flex:1; min-width: 130px;">
+                <label style="font-size: 0.7rem; font-weight: bold;">LỚP:</label>
+                <select id="admin-filter-class" style="width:100%; padding:8px; border-radius:5px;">
+                    <option value="all">Tất cả lớp</option>
+                </select>
+            </div>
+            <div style="flex:1; min-width: 130px;">
+                <label style="font-size: 0.7rem; font-weight: bold;">CHẾ ĐỘ:</label>
+                <select id="admin-filter-mode" style="width:100%; padding:8px; border-radius:5px;">
+                    <option value="all">Tất cả</option>
+                    <option value="test">Kiểm tra</option>
+                    <option value="practice">Luyện tập</option>
+                </select>
+            </div>
+            <button id="btn-admin-refresh" class="btn" style="background:var(--secondary); color:white; font-size:0.8rem">LÀM MỚI 🔄</button>
+            <button id="btn-export-excel" class="btn" style="background:var(--success); color:white; font-size:0.8rem">XUẤT EXCEL 📗</button>
+        </div>
+        <div class="admin-table-container">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Hạng</th><th>SBD</th><th>Họ tên</th><th>Lớp</th><th>Trường</th><th>Chế độ</th><th>Điểm</th><th>TG Làm</th><th>Ngày</th><th>Xoá</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-list-body"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <footer>
+        <div style="font-weight: 800; color: #cbd5e0; margin-bottom: 5px;">HỆ THỐNG LUYỆN TẬP KHOA HỌC TỰ NHIÊN 9</div>
+        <div style="font-size: 0.85rem;">Bản quyền thuộc về Trường THCS Thuỷ Phương, Thành phố Huế</div>
+    </footer>
+</div>
+
+<!-- Modal Đăng nhập Admin -->
+<div id="admin-auth-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:20000; display:none; justify-content:center; align-items:center;">
+    <div class="card" style="width:100%; max-width:400px; text-align:center;">
+        <h2 style="color: var(--primary)">Xác minh Quản trị</h2>
+        <input type="password" id="admin-pw" placeholder="Mật khẩu..." style="margin-bottom:20px;" oncopy="return false" oncut="return false" onpaste="return false">
+        <div style="display:flex; gap:10px;">
+            <button class="btn btn-gray" style="flex:1" id="btn-auth-cancel">HỦY</button>
+            <button class="btn btn-fire" style="flex:1" id="btn-auth-confirm">XÁC NHẬN</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Xác nhận Hành động (Xoá/Lưu cấu hình) -->
+<div id="delete-auth-modal" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:20001; display:none; justify-content:center; align-items:center;">
+    <div class="card" style="width:100%; max-width:400px; text-align:center; border: 4px solid var(--danger);">
+        <h2 id="auth-action-title" style="color: var(--danger)">Xác nhận Hành động</h2>
+        <p style="margin-bottom: 15px; color: #475569;">Vui lòng nhập mật khẩu cấp cao để tiếp tục:</p>
+        <input type="password" id="delete-pw" placeholder="Mật khẩu..." style="margin-bottom:20px; outline:none; border:2px solid var(--danger);">
+        <div style="display:flex; gap:10px;">
+            <button class="btn btn-gray" style="flex:1" id="btn-delete-cancel">HỦY</button>
+            <button class="btn btn-fire" style="flex:1; background: var(--danger);" id="btn-delete-confirm">XÁC NHẬN</button>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyDg4Q6rsrvPhY31oCpL4DAAjTKlgjJN1c0",
+    authDomain: "khtn9-5c1f4.firebaseapp.com",
+    projectId: "khtn9-5c1f4",
+    storageBucket: "khtn9-5c1f4.firebasestorage.app",
+    messagingSenderId: "498407772914",
+    appId: "1:498407772914:web:8ec0ed711675a96a42366b",
+    measurementId: "G-GPZSP2DR92"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const appId_fixed = 'kham-pha-vat-ly-9';
+const collectionName = 'quiz_results'; 
+
+let currentUser = null, quizStartTime = 0, isQuizRunning = false, mode = '', currentIdx = 0, userAnswers = {}, timeLeft = 0, timerInt, currentExam = [];
+const audioPing = new Audio('https://www.soundjay.com/buttons/sounds/button-16.mp3');
+const audioFinish = new Audio('https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3');
+
+// Cấu hình thời gian mặc định (2700s = 45m)
+let practiceTimeLimit = 2700;
+let testTimeLimit = 2700;
+
+// CỜ CHỐNG GIAN LẬN
+let canCheckCheat = false; 
+let isProcessingCheat = false;
+let wishTimeoutId = null;
+
+document.addEventListener('copy', (e) => { e.preventDefault(); return false; });
+document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey && (e.key === 'c' || e.key === 'v' || e.key === 'x' || e.key === 'u' || e.key === 's'))) {
+        e.preventDefault(); return false;
+    }
+}, true);
+
+signInAnonymously(auth).catch(e => console.error(e));
+onAuthStateChanged(auth, async user => {
+    currentUser = user;
+    if(user) loadTimeConfig();
+});
+
+// NGÂN HÀNG 40 CÂU HỎI TÌM HIỂU GIÁO DỤC STEM
+const BANK_MCQ = [ { id: "STEM.1", q: "STEM là sự tích hợp của các lĩnh vực nào?", a: ["Khoa học, công nghệ, kĩ thuật, toán học.", "Khoa học, cơ khí, kinh tế, mĩ thuật.", "Tự nhiên, xã hội, công nghệ, toán học.", "Vật lí, hóa học, sinh học, tin học."], c: 0, ex: "Phương án A ĐÚNG vì STEM là viết tắt của các lĩnh vực Science (Khoa học), Technology (Công nghệ), Engineering (Kĩ thuật) và Mathematics (Toán học)." }, { id: "STEM.2", q: "Bản chất của giáo dục STEM là gì?", a: ["Dạy học tách rời từng môn lí thuyết.", "Tiếp cận liên môn giải quyết thực tiễn.", "Chỉ đào tạo chuyên gia lập trình máy tính.", "Tổ chức các trò chơi giải trí ngoại khóa."], c: 1, ex: "Phương án B ĐÚNG vì bản chất của giáo dục STEM là phương thức giáo dục tích hợp theo tiếp cận liên môn, giúp học sinh áp dụng kiến thức giải quyết vấn đề thực tiễn." }, { id: "STEM.3", q: "Mục tiêu cốt lõi của giáo dục STEM là gì?", a: ["Phát triển phẩm chất và năng lực học sinh.", "Bắt buộc học sinh thi học sinh giỏi quốc gia.", "Thay thế hoàn toàn sách giáo khoa hiện hành.", "Giảm thời gian học tập trên lớp của học sinh."], c: 0, ex: "Phương án A ĐÚNG vì mục tiêu cốt lõi là phát triển phẩm chất, năng lực người học, hình thành khả năng vận dụng kiến thức vào thực tiễn." }, { id: "STEM.4", q: "Thành tố T trong STEM viết tắt cho lĩnh vực nào?", a: ["Technology (Công nghệ).", "Technique (Kĩ thuật).", "Teaching (Giảng dạy).", "Theory (Lí thuyết)."], c: 0, ex: "Phương án A ĐÚNG vì thành tố T là Technology, đại diện cho lĩnh vực công nghệ." }, { id: "STEM.5", q: "Thành tố E trong STEM viết tắt cho lĩnh vực nào?", a: ["Economics (Kinh tế).", "Education (Giáo dục).", "Engineering (Kĩ thuật).", "Environment (Môi trường)."], c: 2, ex: "Phương án C ĐÚNG vì thành tố E là Engineering, đại diện cho lĩnh vực kĩ thuật." }, { id: "STEM.6", q: "Trong tiến trình STEM, bước đầu tiên học sinh làm gì?", a: ["Chế tạo đại trà sản phẩm.", "Xác định vấn đề cần giải quyết.", "Làm bài kiểm tra điểm số cuối kì.", "Viết báo cáo tổng kết năm học."], c: 1, ex: "Phương án B ĐÚNG vì bước đầu tiên của tiến trình thiết kế kĩ thuật trong STEM là xác định vấn đề, nhiệm vụ cần giải quyết." }, { id: "STEM.7", q: "Mức độ trải nghiệm trong giáo dục STEM hướng tới điều gì?", a: ["Quan sát và khám phá hiện tượng.", "Tự chế tạo tên lửa không gian.", "Lập trình trí tuệ nhân tạo cấp cao.", "Nghiên cứu hàn lâm chuyên sâu."], c: 0, ex: "Phương án A ĐÚNG vì mức độ trải nghiệm giúp học sinh quan sát, tìm tòi và khám phá các hiện tượng tự nhiên, đời sống." }, { id: "STEM.8", q: "Điểm khác biệt của mức độ thiết kế kĩ thuật là gì?", a: ["Chỉ đọc tài liệu lí thuyết sẵn có.", "Tạo ra sản phẩm giải quyết nhiệm vụ.", "Không cần sử dụng kiến thức toán học.", "Chỉ nghe giáo viên giảng bài trên bảng."], c: 1, ex: "Phương án B ĐÚNG vì mức độ thiết kế kĩ thuật yêu cầu học sinh phải chế tạo ra mô hình, sản phẩm cụ thể để giải quyết vấn đề đặt ra." }, { id: "STEM.9", q: "Khi dạy học STEM, vai trò của giáo viên là gì?", a: ["Người truyền thụ kiến thức một chiều.", "Người hướng dẫn, hỗ trợ và cố vấn.", "Người làm thay mọi việc cho học sinh.", "Người đứng ngoài không quan tâm lớp."], c: 1, ex: "Phương án B ĐÚNG vì giáo viên đóng vai trò người thiết kế, định hướng, hỗ trợ và cố vấn cho học sinh hoạt động." }, { id: "STEM.10", q: "Phát biểu nào sau đây là SAI về giáo dục STEM?", a: ["Gắn kết lí thuyết với thực tiễn đời sống.", "Chỉ dành riêng cho học sinh giỏi xuất sắc.", "Rèn luyện kĩ năng làm việc nhóm hiệu quả.", "Phát triển tư duy sáng tạo cho học sinh."], c: 1, ex: "Phương án B ĐÚNG (là phát biểu sai về bản chất STEM) vì giáo dục STEM dành cho mọi đối tượng học sinh, không phải chỉ dành riêng cho học sinh giỏi xuất sắc." }, { id: "STEM.11", q: "Môn học nào đóng vai trò định lượng trong STEM?", a: ["Ngữ văn.", "Lịch sử.", "Toán học.", "Âm nhạc."], c: 2, ex: "Phương án C ĐÚNG vì Toán học cung cấp các công cụ tính toán, đo đạc và định lượng trong các bài học STEM." }, { id: "STEM.12", q: "Môn học nào cung cấp nguyên lí tự nhiên trong STEM?", a: ["Khoa học tự nhiên.", "Giáo dục công dân.", "Thể dục thể thao.", "Mỹ thuật hội họa."], c: 0, ex: "Phương án A ĐÚNG vì Khoa học tự nhiên cung cấp các định luật, nguyên lí khoa học làm nền tảng cho việc giải quyết vấn đề." }, { id: "STEM.13", q: "Hình thức triển khai STEM phổ biến nhất ở trường phổ thông là gì?", a: ["Lồng ghép trong môn học chính khóa.", "Cho học sinh nghỉ học đi lao động.", "Chỉ dạy học vào ban đêm trực tuyến.", "Bắt buộc học sinh tự học ở nhà hoàn toàn."], c: 0, ex: "Phương án A ĐÚNG vì hình thức phổ biến là tổ chức các bài học STEM lồng ghép thông qua các hoạt động giáo dục chính khóa." }, { id: "STEM.14", q: "Sản phẩm trong bài học STEM yêu cầu như thế nào?", a: ["Phải là thiết bị điện tử đắt tiền.", "Có tính ứng dụng giải quyết vấn đề.", "Bắt buộc phải nhập khẩu từ nước ngoài.", "Chỉ mang tính chất trang trí trưng bày."], c: 1, ex: "Phương án B ĐÚNG vì sản phẩm STEM phải có tính thực tiễn, đáp ứng các tiêu chí kĩ thuật để giải quyết vấn đề đặt ra." }, { id: "STEM.15", q: "Trong tiến trình STEM, kiến thức nền nhằm mục đích gì?", a: ["Làm cơ sở lí luận để thiết kế sản phẩm.", "Bắt học sinh học thuộc lòng không cần hiểu.", "Làm tăng độ khó của bài kiểm tra viết.", "Thay thế hoàn toàn thời gian thực hành."], c: 0, ex: "Phương án A ĐÚNG vì kiến thức nền là cơ sở khoa học để học sinh vận dụng vào việc thiết kế và chế tạo sản phẩm." }, { id: "STEM.16", q: "Hoạt động thử nghiệm sản phẩm nhằm mục đích gì?", a: ["Kiểm tra mức độ đáp ứng tiêu chí kĩ thuật.", "Làm hư hỏng sản phẩm để mua mới.", "Kéo dài thời gian nghỉ ngơi của lớp học.", "Trốn tránh việc báo cáo trước tập thể."], c: 0, ex: "Phương án A ĐÚNG vì thử nghiệm giúp kiểm tra xem sản phẩm có đạt các tiêu chí đặt ra hay không để tiến hành cải tiến." }, { id: "STEM.17", q: "Khi sản phẩm chưa đạt tiêu chuẩn, học sinh cần làm gì?", a: ["Bỏ cuộc và không làm nữa.", "Cải tiến và điều chỉnh thiết kế.", "Nhờ giáo viên làm hộ từ đầu.", "Che giấu khuyết điểm sản phẩm."], c: 1, ex: "Phương án B ĐÚNG vì quá trình thiết kế kĩ thuật luôn đòi hỏi việc thử nghiệm, đánh giá, từ đó cải tiến và điều chỉnh thiết kế." }, { id: "STEM.18", q: "Đặc điểm của nhiệm vụ mở trong STEM là gì?", a: ["Chỉ có duy nhất một đáp án đúng.", "Cho phép nhiều giải pháp sáng tạo.", "Không có bất kì quy định nào cả.", "Quá khó khiến học sinh không làm được."], c: 1, ex: "Phương án B ĐÚNG vì nhiệm vụ mở cho phép học sinh tự do sáng tạo và đưa ra nhiều giải pháp, thiết kế khác nhau." }, { id: "STEM.19", q: "Công cụ nào thường dùng để đánh giá năng lực học sinh STEM?", a: ["Bảng tiêu chí rubrics.", "Điểm số ngẫu nhiên.", "Cảm tính của giáo viên.", "Thời gian nộp bài nhanh."], c: 0, ex: "Phương án A ĐÚNG vì bảng tiêu chí (Rubrics) là công cụ đánh giá toàn diện quá trình và sản phẩm của học sinh một cách khách quan." }, { id: "STEM.20", q: "Vật liệu làm sản phẩm STEM ưu tiên loại nào?", a: ["Vật liệu tái chế, chi phí thấp.", "Linh kiện vàng bạc đắt tiền.", "Vật liệu độc hại nguy hiểm.", "Thiết bị quân sự chuyên dụng."], c: 0, ex: "Phương án A ĐÚNG vì giáo dục STEM khuyến khích sử dụng vật liệu gần gũi, dễ tìm, vật liệu tái chế, chi phí thấp." }, { id: "STEM.21", q: "Ý nghĩa của việc làm việc nhóm trong STEM là gì?", a: ["Phát triển kĩ năng giao tiếp, hợp tác.", "Đùn đẩy công việc cho bạn khác.", "Gây mâu thuẫn giữa các thành viên.", "Giảm thời gian suy nghĩ cá nhân."], c: 0, ex: "Phương án A ĐÚNG vì làm việc nhóm giúp học sinh phát triển năng lực giao tiếp, hợp tác và phân chia công việc hiệu quả." }, { id: "STEM.22", q: "Thành tố S trong STEM là gì?", a: ["Science (Khoa học).", "Sport (Thể thao).", "System (Hệ thống).", "Student (Học sinh)."], c: 0, ex: "Phương án A ĐÚNG vì thành tố S là Science, chỉ lĩnh vực khoa học." }, { id: "STEM.23", q: "Giáo dục STEM giúp học sinh kết nối điều gì?", a: ["Kiến thức nhà trường với thực tiễn.", "Lí thuyết suông với học thuộc lòng.", "Trò chơi điện tử với bạo lực học đường.", "Điểm số cá nhân với tiền bạc."], c: 0, ex: "Phương án A ĐÚNG vì giáo dục STEM tạo cầu nối vững chắc đưa kiến thức hàn lâm trong sách vở vào giải quyết các vấn đề thực tiễn." }, { id: "STEM.24", q: "Phát biểu nào sau đây là ĐÚNG về giáo dục STEM?", a: ["Là phương thức giáo dục tích hợp liên môn.", "Chỉ là phong trào hình thức tạm thời.", "Thay thế hoàn toàn các môn khoa học xã hội.", "Không cần sự chuẩn bị kế hoạch bài dạy."], c: 0, ex: "Phương án A ĐÚNG vì STEM là phương thức giáo dục tích hợp liên môn nhằm phát triển năng lực giải quyết vấn đề cho học sinh." } ]; const BANK_TF = [ { id: "STEM.25", context: "Về bản chất và mục tiêu của giáo dục STEM:", items: [ "STEM là phương thức giáo dục tích hợp liên môn.", "Giáo dục STEM tách rời hoàn toàn bốn lĩnh vực độc lập.", "STEM giúp học sinh ứng dụng kiến thức giải quyết thực tiễn.", "Mục tiêu STEM là loại bỏ các môn khoa học tự nhiên." ], c: [true, false, true, false], ex: "a) Đúng, STEM tích hợp 4 lĩnh vực; b) Sai, STEM mang tính liên môn; c) Đúng, gắn liền thực tiễn; d) Sai, STEM phát triển các môn khoa học." }, { id: "STEM.26", context: "Về các mức độ tổ chức giáo dục STEM:", items: [ "Mức độ trải nghiệm giúp học sinh quan sát, khám phá hiện tượng.", "Mức độ thiết kế kĩ thuật yêu cầu tạo ra sản phẩm giải quyết vấn đề.", "Mọi bài học STEM đều có chung một mức độ đơn giản.", "Phân chia mức độ giúp giáo viên thiết kế bài dạy phù hợp." ], c: [true, true, false, true], ex: "a) Đúng, trải nghiệm giúp khám phá; b) Đúng, thiết kế kĩ thuật tạo sản phẩm; c) Sai, các mức độ phức tạp khác nhau; d) Đúng, giúp định hướng sư phạm." }, { id: "STEM.27", context: "Về tiến trình thiết kế kĩ thuật trong STEM:", items: [ "Bước đầu tiên là xác định vấn đề và tiêu chí sản phẩm.", "Học sinh có thể chế tạo ngay mà không cần tìm hiểu kiến thức.", "Thử nghiệm và cải tiến giúp hoàn thiện sản phẩm học tập.", "Tiến trình kĩ thuật không tuân theo quy luật tư duy nào." ], c: [true, false, true, false], ex: "a) Đúng, cần xác định rõ nhiệm vụ; b) Sai, cần có kiến thức nền; c) Đúng, thử nghiệm giúp tối ưu hóa; d) Sai, tuân thủ quy trình khoa học." }, { id: "STEM.28", context: "Về vai trò các môn học trong giáo dục STEM:", items: [ "Toán học cung cấp công cụ tính toán và đo đạc.", "Khoa học tự nhiên cung cấp nguyên lí, định luật nền tảng.", "Công nghệ hướng dẫn quy trình chế tạo sản phẩm.", "Các môn học hoạt động đơn lẻ không liên quan nhau." ], c: [true, true, true, false], ex: "a, b, c đúng vì các môn có vai trò bổ trợ và tích hợp; d) Sai vì các môn liên kết chặt chẽ." }, { id: "STEM.29", context: "Về công tác đánh giá học sinh trong STEM:", items: [ "Chỉ đánh giá duy nhất qua bài thi viết lí thuyết.", "Đánh giá toàn quá trình và sản phẩm thực tế của học sinh.", "Sử dụng bảng tiêu chí rubrics để đánh giá khách quan.", "Không cần tiêu chí đánh giá sản phẩm rõ ràng." ], c: [false, true, true, false], ex: "a) Sai, đánh giá toàn diện; b, c) Đúng, đánh giá quá trình/sản phẩm bằng rubrics; d) Sai, tiêu chí đánh giá là bắt buộc." }, { id: "STEM.30", context: "Về điều kiện thực hiện giáo dục STEM tại nhà trường:", items: [ "Có thể sử dụng vật liệu tái chế, chi phí thấp.", "Bắt buộc phải có phòng thí nghiệm robot tỷ đô.", "Sự sáng tạo của giáo viên là yếu tố quan trọng.", "Địa phương khó khăn không thể triển khai STEM." ], c: [true, false, true, false], ex: "a, c) Đúng vì tận dụng vật liệu mở và sáng tạo sư phạm; b, d) Sai vì STEM rất linh hoạt, phù hợp mọi điều kiện." }, { id: "STEM.31", context: "Về ý nghĩa của giáo dục STEM đối với học sinh:", items: [ "Phát triển năng lực giải quyết vấn đề thực tiễn.", "Rèn luyện kĩ năng làm việc nhóm và giao tiếp.", "Làm giảm sút năng lực tư duy sáng tạo của học sinh.", "Kích thích niềm đam mê khoa học kĩ thuật." ], c: [true, true, false, true], ex: "a, b, d đúng là các ưu điểm lớn của STEM; c) Sai vì STEM thúc đẩy tư duy sáng tạo mạnh mẽ." }, { id: "STEM.32", context: "Về vai trò của giáo viên trong lớp học STEM:", items: [ "Chuyển từ truyền thụ sang người định hướng, hỗ trợ.", "Làm thay mọi việc khó khăn thay cho học sinh.", "Khuyến khích học sinh tự khám phá, chế tạo sản phẩm.", "Áp đặt duy nhất một cách làm rập khuôn." ], c: [true, false, true, false], ex: "a, c) Đúng, GV là người hỗ trợ và thúc đẩy tính chủ động; b, d) Sai, học sinh tự làm và sáng tạo." } ]; const BANK_SHORT = [ { id: "STEM.33", q: "Cho các nhận định sau về giáo dục STEM:\n1. STEM là phương thức giáo dục tích hợp liên môn.\n2. Giáo dục STEM loại bỏ hoàn toàn các môn tự nhiên.\n3. Bản chất STEM là tiếp cận liên môn giải quyết thực tiễn.\n4. Mục tiêu STEM là nhồi nhét lí thuyết hàn lâm.\n5. Toán học đóng vai trò công cụ định lượng trong STEM.\n6. Sản phẩm STEM bắt buộc phải mua linh kiện ngoại.\n7. STEM góp phần phát triển năng lực học sinh.\n8. Giáo dục STEM chỉ là hoạt động ngoại khóa đơn thuần.", c: "1357", ex: "Các nhận định đúng là 1, 3, 5, 7 vì phản ánh đúng bản chất tích hợp, công cụ định lượng và mục tiêu phát triển năng lực của STEM." }, { id: "STEM.34", q: "Cho các nhận định sau về các mức độ tổ chức STEM:\n1. Mức độ trải nghiệm giúp quan sát hiện tượng tự nhiên.\n2. Mức độ thiết kế kĩ thuật yêu cầu chế tạo sản phẩm.\n3. Tất cả bài học STEM chỉ có một mức độ duy nhất.\n4. Lồng ghép chính khóa là hình thức triển khai phổ biến.\n5. Không cần chọn mức độ phù hợp với đối tượng học sinh.\n6. Mức độ thiết kế đòi hỏi tích hợp kiến thức liên môn.\n7. Hoạt động STEM chỉ tổ chức ngoài hè ở ngoài trường.\n8. Phân loại mức độ giúp lập kế hoạch dạy học tốt hơn.", c: "1246", ex: "Các nhận định đúng là 1, 2, 4, 6 vì mô tả chính xác các mức độ, hình thức triển khai và đặc điểm tích hợp trong bài học STEM." }, { id: "STEM.35", q: "Cho các nhận định sau về vai trò giáo viên và học sinh trong STEM:\n1. Giáo viên là người định hướng, hỗ trợ, cố vấn.\n2. Học sinh chủ động khám phá và làm việc nhóm.\n3. Giáo viên làm thay toàn bộ các công đoạn khó.\n4. Học sinh được đưa ra nhiều giải pháp sáng tạo.\n5. Lớp học STEM khuyến khích tranh luận, phản biện.\n6. Giáo viên bắt học sinh sao chép y hệt một cách làm.\n7. Học sinh tự đánh giá và đánh giá chéo sản phẩm.\n8. Giáo viên chỉ chấm điểm giấy cuối kì duy nhất.", c: "1245", ex: "Các nhận định đúng là 1, 2, 4, 5 vì đề cao tính chủ động, sáng tạo của học sinh và vai trò cố vấn của giáo viên." }, { id: "STEM.36", q: "Cho các nhận định sau về kiểm tra, đánh giá trong STEM:\n1. Đánh giá toàn diện cả quá trình và sản phẩm.\n2. Chỉ dùng bài thi tự luận viết tay truyền thống.\n3. Sử dụng rubrics là công cụ đánh giá hiệu quả.\n4. Đánh giá thái độ làm việc nhóm của học sinh.\n5. Tiêu chí đánh giá cần rõ ràng và công khai.\n6. Giáo viên chấm điểm dựa vào cảm tính cá nhân.\n7. Khuyến khích tự đánh giá và đánh giá đồng đẳng.\n8. Kết quả đánh giá không có giá trị phản hồi.", c: "1345", ex: "Các nhận định đúng là 1, 3, 4, 5 vì đánh giá STEM mang tính toàn diện, sử dụng bảng tiêu chí rubrics công khai, minh bạch." }, { id: "STEM.37", q: "Cho các nhận định sau về vật liệu và điều kiện thực hiện STEM:\n1. Có thể dùng vật liệu tái chế, chi phí thấp.\n2. Bắt buộc phải có phòng lab robot đắt tiền.\n3. Tận dụng vật dụng sinh hoạt hằng ngày làm học liệu.\n4. Sự sáng tạo của giáo viên là yếu tố quyết định.\n5. Địa phương khó khăn không thể triển khai STEM.\n6. Công nghệ thông tin hỗ trợ đắc lực cho bài học.\n7. Huy động nguồn lực xã hội hóa từ phụ huynh.\n8. Học sinh cấm mang vật liệu từ nhà đến lớp.", c: "1346", ex: "Các nhận định đúng là 1, 3, 4, 6 vì STEM tận dụng vật liệu gần gũi, tái chế, đề cao sáng tạo của giáo viên và ứng dụng CNTT." }, { id: "STEM.38", q: "Cho các nhận định sau về ý nghĩa của giáo dục STEM:\n1. Phát triển phẩm chất và năng lực học sinh.\n2. Vận dụng kiến thức liên môn giải quyết thực tiễn.\n3. Biến học sinh thành cỗ máy ghi nhớ máy móc.\n4. Rèn luyện kĩ năng mềm: làm việc nhóm, phản biện.\n5. Kích thích đam mê nghiên cứu khoa học kĩ thuật.\n6. Làm giảm sút thành tích học tập văn hóa trên lớp.\n7. Tạo cơ hội hiện thực hóa ý tưởng sáng tạo.\n8. Gây áp lực tâm lí căng thẳng quá mức cho học sinh.", c: "1245", ex: "Các nhận định đúng là 1, 2, 4, 5 phản ánh đúng những giá trị thiết thực mà giáo dục STEM mang lại cho người học." }, { id: "STEM.39", q: "Ngày 14/8/2020, Bộ GD&ĐT đã ban hành Công văn về việc triển khai thực hiện giáo dục STEM trong trường trung học, đó là công văn số mấy?", c: "3098", ex: "Công văn số 3098/BGDĐT-GDTrH được ban hành ngày 14/8/2020 là văn bản quan trọng chỉ đạo thực hiện giáo dục STEM trong cấp trung học." }, { id: "STEM.40", q: "Ngày 26/12/2018, lần đầu tiên Bộ GD&ĐT đưa khái niệm và định hướng giáo dục STEM vào trong Chương trình giáo dục phổ thông tổng thể, đó là thông tư số mấy?", c: "32", ex: "Thông tư số 32/2018/TT-BGDĐT ban hành Chương trình giáo dục phổ thông mới, đặt nền móng cho việc triển khai giáo dục STEM." } ];
+let fireRequest;
+function startFire() {
+    const canvas = document.getElementById('fire-canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+    let flames = [];
+    class Flame {
+        constructor() {
+            this.x = Math.random() * canvas.width; this.y = canvas.height + 100; this.size = Math.random() * 100 + 60;
+            this.vx = Math.random() * 2 - 1; this.vy = Math.random() * -4 - 3; this.life = 1.0; this.decay = Math.random() * 0.01 + 0.006;
+        }
+        update() { this.x += this.vx + Math.sin(this.life * 10) * 1.5; this.y += this.vy; this.life -= this.decay; this.size *= 0.992; }
+        draw() {
+            if (this.life <= 0) return;
+            ctx.save(); ctx.translate(this.x, this.y); ctx.beginPath(); ctx.moveTo(0, 0);
+            ctx.bezierCurveTo(-this.size/2.5, -this.size/2, -this.size/3, -this.size*0.8, 0, -this.size * 1.3);
+            ctx.bezierCurveTo(this.size/3, -this.size*0.8, this.size/2.5, -this.size/2, 0, 0);
+            let color = this.life > 0.8 ? `rgba(255, 255, 255, ${this.life})` : (this.life > 0.5 ? `rgba(255, 220, 0, ${this.life})` : (this.life > 0.2 ? `rgba(255, 80, 0, ${this.life})` : `rgba(200, 0, 0, ${this.life})`));
+            ctx.fillStyle = color; ctx.shadowBlur = this.size / 3; ctx.shadowColor = "#ff4e00"; ctx.fill(); ctx.restore();
+        }
+    }
+    function animate() {
+        if (document.getElementById('wish-overlay').style.display === 'none') return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (flames.length < 55) flames.push(new Flame());
+        for (let i = 0; i < flames.length; i++) { flames[i].update(); flames[i].draw(); if (flames[i].life <= 0) { flames.splice(i, 1); i--; } }
+        fireRequest = requestAnimationFrame(animate);
+    }
+    animate();
+}
+
+function showCustomAlert() {
+    const alertBox = document.getElementById('custom-alert');
+    alertBox.style.display = 'block';
+    setTimeout(() => { alertBox.style.display = 'none'; }, 3000);
+}
+
+function isCurrentQuestionComplete() {
+    const q = currentExam[currentIdx];
+    if (q.type === 'mcq') return !!userAnswers[q.id];
+    if (q.type === 'tf') {
+        const answers = userAnswers[q.id] || {};
+        return (answers[0] !== undefined && answers[1] !== undefined && answers[2] !== undefined && answers[3] !== undefined);
+    }
+    if (q.type === 'short') {
+        const val = userAnswers[q.id] || "";
+        return val.trim().length > 0;
+    }
+    return false;
+}
+
+async function loadTimeConfig() {
+    try {
+        const configDoc = await getDoc(doc(db, 'artifacts', appId_fixed, 'public', 'data', 'config', 'timer_settings'));
+        if(configDoc.exists()) {
+            const data = configDoc.data();
+            practiceTimeLimit = (data.practice || 45) * 60;
+            testTimeLimit = (data.test || 45) * 60;
+            document.getElementById('cfg-time-practice').value = data.practice || 45;
+            document.getElementById('cfg-time-test').value = data.test || 45;
+        }
+    } catch(e) { console.error("Error loading config:", e); }
+}
+
+const initGame = (m) => {
+    const getVal = (id) => {
+        const el = document.getElementById(id);
+        return (el && el.value.trim()) ? el.value.trim() : "input";
+    };
+
+    const name = getVal('username');
+    const sch = getVal('user_school');
+    const cls = getVal('user_class');
+    const sbd = getVal('user_sbd');
+    
+    document.getElementById('start-error').style.display = 'none';
+    window.finalUserData = { name, sch, cls, sbd };
+// Cập nhật thông tin lên Header (Ngang hàng)
+const userInfoEl = document.getElementById('header-user-info');
+if (userInfoEl) {
+    // Rút gọn chữ để đảm bảo hiển thị trên một dòng
+    userInfoEl.innerHTML = `<b>${name}</b> | SBD: <b>${sbd}</b> | Lớp: <b>${cls}</b>`;
+}
+    mode = m;
+    isQuizRunning = true; 
+    canCheckCheat = false; // Luôn tắt kiểm tra gian lận khi mới bắt đầu cấu hình
+    isProcessingCheat = false;
+
+    currentExam = [
+        ...shuffle([...QUESTION_BANK.mcq]).slice(0, 12).map((q, i) => ({...q, id: `p1_${i}`, type: 'mcq', section: 'Phần I. Trắc nghiệm khách quan dạng Đa lựa chọn (12 câu)', displayNum: i+1})),
+        ...shuffle([...QUESTION_BANK.tf]).slice(0, 4).map((q, i) => ({...q, id: `p2_${i}`, type: 'tf', section: 'Phần II. Trắc nghiệm khách quan dạng Đúng/Sai (4 câu)', displayNum: i+1})),
+        ...shuffle([...QUESTION_BANK.short]).slice(0, 4).map((q, i) => ({...q, id: `p3_${i}`, type: 'short', section: 'Phần III. Trắc nghiệm khách quan dạng Trả lời ngắn (4 câu)', displayNum: i+1}))
+    ];
+    userAnswers = {}; currentIdx = 0; 
+    timeLeft = (mode === 'test') ? testTimeLimit : practiceTimeLimit;
+    quizStartTime = Date.now();
+    
+    document.getElementById('wish-overlay').style.display = 'flex';
+    document.getElementById('wish-cheat-info').style.display = (mode === 'test') ? 'block' : 'none';
+    startFire();
+
+    if(mode === 'test') {
+        document.documentElement.requestFullscreen().then(() => {
+            canCheckCheat = true;
+        }).catch(e => {
+            alert("Lỗi: Bạn cần đồng ý Toàn màn hình để thực hiện bài thi này.");
+            location.reload();
+        });
+    }
+
+    wishTimeoutId = setTimeout(() => {
+        if(!isQuizRunning) return; 
+        document.getElementById('wish-overlay').style.display = 'none';
+        cancelAnimationFrame(fireRequest);
+        
+        document.getElementById('main-header').style.display = 'flex';
+        showScreen('screen-quiz'); 
+        renderQuestion(); 
+        startTimer();
+
+        if(mode === 'practice') canCheckCheat = true;
+    }, 5000);
+};
+
+function renderQuestion() {
+    const q = currentExam[currentIdx];
+    const container = document.getElementById('quiz-content');
+    const labels = ['A', 'B', 'C', 'D'];
+    let html = `<div class="section-title">${q.section}</div><div class="card">`;
+    if(mode === 'practice') html += `<button class="btn-hint" id="hint-trigger">XEM GỢI Ý 💡</button><div id="hint-box" class="hint-box" style="display: none;"><b>Hướng dẫn giải:</b> ${q.e}</div>`;
+    
+    if(q.type === 'mcq') {
+        html += `<h3>Câu ${q.displayNum}. ${q.q}</h3>`;
+        if(q.img) html += `<img src="${q.img}" class="q-img" alt="Ảnh minh họa" onerror="this.style.display='none'">`;
+        if(!q.shuffledOptions) q.shuffledOptions = shuffle([...q.o]);
+        q.shuffledOptions.forEach((o, idx) => {
+            const isSelected = userAnswers[q.id] === o;
+            html += `<div class="option ${isSelected?'selected':''}" data-ans="${o.replace(/"/g, '&quot;')}"><b>${labels[idx]}.</b> ${o}</div>`;
+        });
+    } else if(q.type === 'tf') {
+        html += `<h3>Câu ${q.displayNum}</h3><div style="background:#f1f5f9; padding:15px; border-radius:12px; margin-bottom:15px; font-style:italic;">${q.ctx}</div>`;
+        if(q.img) html += `<img src="${q.img}" class="q-img" alt="Ảnh minh họa" onerror="this.style.display='none'">`;
+        q.sts.forEach((st, si) => {
+            let val = (userAnswers[q.id]||{})[si];
+            html += `<div class="tf-row"><span style="flex:1"><b>${st.l}</b> ${st.t}</span><div style="display:flex; gap:10px;"><button class="tf-btn ${val===true?'active-t':''}" data-si="${si}" data-val="true">Đúng</button><button class="tf-btn ${val===false?'active-f':''}" data-si="${si}" data-val="false">Sai</button></div></div>`;
+        });
+    } else {
+        html += `<h3>Câu ${q.displayNum}. ${q.q}</h3>`;
+        if(q.img) html += `<img src="${q.img}" class="q-img" alt="Ảnh minh họa" onerror="this.style.display='none'">`;
+        const currentVal = (userAnswers[q.id] || "").padEnd(4, " ");
+        html += `<div class="short-answer-wrapper">
+                    <input type="text" class="char-slot" maxlength="1" value="${currentVal[0] !== ' ' ? currentVal[0] : ''}" data-idx="0">
+                    <input type="text" class="char-slot" maxlength="1" value="${currentVal[1] !== ' ' ? currentVal[1] : ''}" data-idx="1">
+                    <input type="text" class="char-slot" maxlength="1" value="${currentVal[2] !== ' ' ? currentVal[2] : ''}" data-idx="2">
+                    <input type="text" class="char-slot" maxlength="1" value="${currentVal[3] !== ' ' ? currentVal[3] : ''}" data-idx="3">
+                 </div>
+                 <p style="color:var(--danger); font-size:0.75rem; font-weight:bold; text-align:center;">Lưu ý: Nhập mỗi kí tự vào một ô (kể cả dấu "," hoặc dấu âm "-")</p>`;
+    }
+    container.innerHTML = html + `</div>`;
+    
+    if(q.type === 'mcq') {
+        container.querySelectorAll('.option').forEach(el => el.onclick = () => { userAnswers[q.id] = el.getAttribute('data-ans'); audioPing.play().catch(()=>{}); renderQuestion(); });
+    } else if(q.type === 'tf') {
+        container.querySelectorAll('.tf-btn').forEach(el => el.onclick = () => {
+            const si = el.getAttribute('data-si'), val = el.getAttribute('data-val') === 'true';
+            if(!userAnswers[q.id]) userAnswers[q.id] = {}; userAnswers[q.id][si] = val; audioPing.play().catch(()=>{}); renderQuestion();
+        });
+    } else {
+        const slots = container.querySelectorAll('.char-slot');
+        slots.forEach((slot, idx) => {
+            slot.oninput = (e) => {
+                const val = e.target.value;
+                if (val && idx < 3) slots[idx + 1].focus();
+                let combined = ""; slots.forEach(s => combined += (s.value || " "));
+                userAnswers[q.id] = combined.trim();
+            };
+            slot.onkeydown = (e) => { if (e.key === 'Backspace' && !e.target.value && idx > 0) slots[idx - 1].focus(); };
+        });
+    }
+    const hb = document.getElementById('hint-trigger');
+    if(hb) hb.onclick = async () => { const b = document.getElementById('hint-box'); const isH = b.style.display === 'none'; b.style.display = isH ? 'block' : 'none'; if(isH && window.MathJax) await MathJax.typesetPromise([b]); };
+    document.getElementById('btn-prev').style.visibility = currentIdx === 0 ? 'hidden' : 'visible';
+    document.getElementById('btn-next').style.display = currentIdx === currentExam.length - 1 ? 'none' : 'block';
+    document.getElementById('btn-finish').style.display = currentIdx === currentExam.length - 1 ? 'block' : 'none';
+    if(window.MathJax) MathJax.typesetPromise();
+}
+
+async function calculateResult() {
+    if(!isQuizRunning && !isProcessingCheat) return;
+    
+    if(wishTimeoutId) clearTimeout(wishTimeoutId);
+    isQuizRunning = false; 
+    canCheckCheat = false; 
+    clearInterval(timerInt); 
+    audioFinish.play().catch(()=>{});
+
+    const dur = Math.floor((Date.now() - quizStartTime) / 1000);
+    let score = 0;
+    const tfMap = {0:0, 1:0.05, 2:0.125, 3:0.25, 4:0.5};
+    currentExam.forEach(q => {
+        const norm = (s) => (s || "").toString().trim().replace(',','.');
+        if(q.type === 'mcq' && norm(userAnswers[q.id]||'') === norm(q.a)) score += 0.25;
+        else if(q.type === 'tf') {
+            let cp = 0, u = userAnswers[q.id] || {};
+            q.sts.forEach((st, si) => { if(u[si] === st.a) cp++; }); score += tfMap[cp] || 0;
+        } else if(q.type === 'short' && norm(userAnswers[q.id]||'') === norm(q.a)) score += 0.5;
     });
+    const fs = parseFloat(Math.min(7, score).toFixed(1));
+    
+    document.getElementById('wish-overlay').style.display = 'none';
+    cancelAnimationFrame(fireRequest);
+
+    showScreen('screen-result'); document.getElementById('main-header').style.display = 'none';
+    document.getElementById('final-score').innerText = fs.toFixed(1);
+    const u = window.finalUserData;
+    document.getElementById('res-name').innerText = (u.name || "input").toUpperCase();
+    document.getElementById('res-meta').innerText = `${u.sch || "input"} | Lớp ${u.cls || "input"} | SBD ${u.sbd || "input"}`;
+    
+    let rb = document.getElementById('rank-badge'), txt = 'CHƯA ĐẠT', col = '#64748b';
+    if(fs >= 6.3) { txt='XUẤT SẮC'; col='#f59e0b'; } else if(fs >= 5.6) { txt='GIỎI'; col='#10b981'; } else if(fs >= 4.5) { txt='KHÁ'; col='#3b82f6'; } else if(fs >= 3.5) { txt='ĐẠT'; col='#8b5cf6'; }
+    rb.innerText = txt; rb.style.background = col;
+    if(fs >= 3.5) confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+
+    if(currentUser) {
+        try { 
+            await addDoc(collection(db, 'artifacts', appId_fixed, 'public', 'data', collectionName), { 
+                name: u.name, school: u.sch, sbd: u.sbd, class: u.cls, score: fs, duration: dur, mode: mode, timestamp: new Date().toISOString() 
+            }); 
+        } catch(e) { console.error(e); }
+    }
+    fetchRankAndLeaderboard(fs);
+    if (document.fullscreenElement) { document.exitFullscreen().catch(()=>{}); }
+}
+
+async function fetchRankAndLeaderboard(myScore) {
+    try {
+        const snap = await getDocs(collection(db, 'artifacts', appId_fixed, 'public', 'data', collectionName));
+        let list = []; snap.forEach(d => list.push(d.data()));
+        list = list.filter(r => (r.mode === 'test' || !r.mode));
+        list.sort((a,b) => b.score - a.score || a.duration - b.duration);
+        const myRank = list.findIndex(r => r.name === window.finalUserData.name && r.score === myScore) + 1;
+        if(myRank > 0) document.getElementById('my-rank-text').innerText = `HẠNG ${myRank} / ${list.length}`;
+        else document.getElementById('my-rank-text').innerText = `KẾT QUẢ LUYỆN TẬP`;
+    } catch (e) {}
+}
+
+async function renderAdmin() {
+    const listBody = document.getElementById('admin-list-body'), statsBox = document.getElementById('admin-stats');
+    listBody.innerHTML = "<tr><td colspan='10'>Đang tải dữ liệu...</td></tr>";
+    try {
+        const snap = await getDocs(collection(db, 'artifacts', appId_fixed, 'public', 'data', collectionName));
+        let rawData = []; snap.forEach(d => rawData.push({id: d.id, ...d.data()}));
+        const classes = [...new Set(rawData.map(i => i.class))].sort();
+        const schools = [...new Set(rawData.map(i => i.school))].filter(s => s).sort();
+        const fClass = document.getElementById('admin-filter-class'); const oldC = fClass.value;
+        fClass.innerHTML = '<option value="all">Tất cả lớp</option>' + classes.map(c => `<option value="${c}" ${c===oldC?'selected':''}>Lớp ${c}</option>`).join('');
+        const fSchool = document.getElementById('admin-filter-school'); const oldS = fSchool.value;
+        fSchool.innerHTML = '<option value="all">Tất cả trường</option>' + schools.map(s => `<option value="${s}" ${s===oldS?'selected':''}>${s}</option>`).join('');
+        const mFilter = document.getElementById('admin-filter-mode').value;
+        const sVal = document.getElementById('admin-sort').value;
+        let data = rawData.filter(i => {
+            const matchMode = (mFilter === 'all') || (i.mode === mFilter) || (mFilter === 'test' && !i.mode);
+            const matchClass = (fClass.value === 'all') || (i.class === fClass.value);
+            const matchSchool = (fSchool.value === 'all') || (i.school === fSchool.value);
+            return matchMode && matchClass && matchSchool;
+        });
+        data.sort((a,b) => {
+            if(sVal === 'score_desc') return b.score - a.score || a.duration - b.duration;
+            if(sVal === 'date_new') return new Date(b.timestamp) - new Date(a.timestamp);
+            if(sVal === 'duration_fast') return a.duration - b.duration || b.score - a.score;
+            return 0;
+        });
+        let s = { xs: 0, g: 0, k: 0, d: 0, cd: 0 };
+        data.forEach(i => { if(i.score >= 6.3) s.xs++; else if(i.score >= 5.6) s.g++; else if(i.score >= 4.5) s.k++; else if(i.score >= 3.5) s.d++; else s.cd++; });
+        statsBox.innerHTML = `<div class="stat-box"><b>${s.xs}</b><br><small>X.Sắc</small></div><div class="stat-box"><b>${s.g}</b><br><small>Giỏi</small></div><div class="stat-box"><b>${s.k}</b><br><small>Khá</small></div><div class="stat-box"><b>${s.d}</b><br><small>Đạt</small></div><div class="stat-box" style="border-color:red"><b>${s.cd}</b><br><small>C.Đạt</small></div>`;
+        listBody.innerHTML = data.map((i, idx) => `<tr><td>${idx+1}</td><td>${i.sbd}</td><td>${i.name}</td><td>${i.class}</td><td>${i.school||'-'}</td><td><span class="badge-mode ${i.mode === 'practice' ? 'badge-practice' : 'badge-test'}">${i.mode === 'practice' ? 'Luyện tập' : 'Kiểm tra'}</span></td><td><b>${(i.score||0).toFixed(1)}</b></td><td>${i.duration}s</td><td>${new Date(i.timestamp).toLocaleDateString()}</td><td><button style="background:red; color:white; border:none; padding:3px 8px; border-radius:4px; cursor:pointer" class="btn-del" data-id="${i.id}">X</button></td></tr>`).join('');
+        listBody.querySelectorAll('.btn-del').forEach(b => b.onclick = () => deleteEntry(b.dataset.id));
+        window.currentFilteredData = data; 
+    } catch(e) { listBody.innerHTML = "<tr><td colspan='10'>Lỗi kết nối Firebase.</td></tr>"; }
+}
+
+let pendingAuthAction = null; 
+let currentDeleteId = null;
+
+function deleteEntry(id) { 
+    pendingAuthAction = 'delete';
+    currentDeleteId = id; 
+    document.getElementById('auth-action-title').innerText = "Xác nhận Xoá";
+    document.getElementById('delete-pw').value = ''; 
+    document.getElementById('delete-auth-modal').style.display = 'flex'; 
+}
+
+document.getElementById('btn-save-config').onclick = () => {
+    pendingAuthAction = 'config';
+    document.getElementById('auth-action-title').innerText = "Đổi Thời gian";
+    document.getElementById('delete-pw').value = ''; 
+    document.getElementById('delete-auth-modal').style.display = 'flex'; 
+};
+
+document.getElementById('btn-delete-cancel').onclick = () => { 
+    document.getElementById('delete-auth-modal').style.display = 'none'; 
+    currentDeleteId = null; 
+    pendingAuthAction = null;
+};
+
+document.getElementById('btn-delete-confirm').onclick = async () => { 
+    const pw = document.getElementById('delete-pw').value;
+    if (pw === "XOA123") { // <-- THẦY CÓ THỂ THAY ĐỔI MẬT KHẨU TẠI ĐÂY
+        document.getElementById('delete-auth-modal').style.display = 'none'; 
+        
+        if (pendingAuthAction === 'delete' && currentDeleteId) {
+            await deleteDoc(doc(db, 'artifacts', appId_fixed, 'public', 'data', collectionName, currentDeleteId)); 
+            renderAdmin(); 
+            currentDeleteId = null;
+        } else if (pendingAuthAction === 'config') {
+            const pTime = parseInt(document.getElementById('cfg-time-practice').value);
+            const tTime = parseInt(document.getElementById('cfg-time-test').value);
+            if(isNaN(pTime) || isNaN(tTime) || pTime <= 0 || tTime <= 0) { alert("Vui lòng nhập số phút hợp lệ!"); return; }
+            try { 
+                await setDoc(doc(db, 'artifacts', appId_fixed, 'public', 'data', 'config', 'timer_settings'), { practice: pTime, test: tTime, lastUpdated: new Date().toISOString() }); 
+                practiceTimeLimit = pTime * 60; 
+                testTimeLimit = tTime * 60; 
+                alert("Đã cập nhật thời gian làm bài thành công!"); 
+            } catch(e) { alert("Lỗi khi lưu cấu hình!"); }
+        }
+        pendingAuthAction = null;
+    } else {
+        const alertBox = document.getElementById('custom-alert');
+        const oldText = alertBox.innerHTML;
+        alertBox.innerHTML = "⚠️ SAI MẬT KHẨU!";
+        alertBox.style.display = 'block';
+        setTimeout(() => { alertBox.style.display = 'none'; alertBox.innerHTML = oldText; }, 3000);
+    }
+};
+
+document.getElementById('btn-admin-open').onclick = () => document.getElementById('admin-auth-modal').style.display = 'flex';
+document.getElementById('btn-auth-cancel').onclick = () => document.getElementById('admin-auth-modal').style.display = 'none';
+document.getElementById('btn-auth-confirm').onclick = () => { if(document.getElementById('admin-pw').value === "112233@@") { document.getElementById('admin-auth-modal').style.display='none'; showScreen('screen-admin'); renderAdmin(); } else alert("Sai mật khẩu!"); };
+
+document.getElementById('btn-init-practice').onclick = () => initGame('practice');
+document.getElementById('btn-init-test').onclick = () => initGame('test');
+document.getElementById('btn-prev').onclick = () => { if(currentIdx > 0) { currentIdx--; renderQuestion(); window.scrollTo(0,0); } };
+document.getElementById('btn-next').onclick = () => { if(!isCurrentQuestionComplete()) { showCustomAlert(); return; } if(currentIdx < currentExam.length - 1) { currentIdx++; renderQuestion(); window.scrollTo(0,0); } };
+document.getElementById('btn-finish').onclick = () => { if(!isCurrentQuestionComplete()) { showCustomAlert(); return; } document.getElementById('confirm-finish-modal').style.display = 'flex'; };
+document.getElementById('btn-modal-cancel').onclick = () => document.getElementById('confirm-finish-modal').style.display = 'none';
+document.getElementById('btn-modal-confirm').onclick = () => { document.getElementById('confirm-finish-modal').style.display = 'none'; calculateResult(); };
+document.getElementById('btn-admin-close').onclick = () => { document.getElementById('main-header').style.display = 'none'; showScreen('screen-start'); };
+document.getElementById('btn-admin-refresh').onclick = () => renderAdmin();
+document.getElementById('admin-sort').onchange = () => renderAdmin();
+document.getElementById('admin-filter-mode').onchange = () => renderAdmin();
+document.getElementById('admin-filter-class').onchange = () => renderAdmin();
+document.getElementById('admin-filter-school').onchange = () => renderAdmin();
+document.getElementById('btn-cheat-submit').onclick = () => { document.getElementById('cheat-modal').style.display = 'none'; calculateResult(); };
+
+document.getElementById('btn-view-review').onclick = () => {
+    const area = document.getElementById('review-area'), content = document.getElementById('review-content'), labels = ['A', 'B', 'C', 'D'];
+    area.style.display = 'block'; let h = '';
+    const norm = (s) => (s || "").toString().trim().replace(',','.');
+    const tfMapReview = {0:0, 1:0.05, 2:0.125, 3:0.25, 4:0.5};
+    currentExam.forEach(q => {
+        let qText = q.type === 'tf' ? `Câu ${q.displayNum} (Đúng/Sai)` : `Câu ${q.displayNum}. ${q.q}`;
+        let itemScore = 0, scoreHTML = '';
+        if(q.type === 'mcq') {
+            itemScore = norm(userAnswers[q.id]||'') === norm(q.a) ? 0.25 : 0;
+            scoreHTML = `<span class="score-badge ${itemScore > 0 ? 'score-plus' : 'score-zero'}">${itemScore > 0 ? '+'+itemScore : '0'}đ</span>`;
+        } else if(q.type === 'short') {
+            itemScore = norm(userAnswers[q.id]||'') === norm(q.a) ? 0.5 : 0;
+            scoreHTML = `<span class="score-badge ${itemScore > 0 ? 'score-plus' : 'score-zero'}">${itemScore > 0 ? '+'+itemScore : '0'}đ</span>`;
+        } else if(q.type === 'tf') {
+            let cp = 0, u = userAnswers[q.id] || {};
+            q.sts.forEach((st, si) => { if(u[si] === st.a) cp++; });
+            itemScore = tfMapReview[cp] || 0;
+            scoreHTML = `<span class="score-badge ${itemScore > 0 ? 'score-plus' : 'score-zero'}">Đúng ${cp}/4 ý (${itemScore > 0 ? '+'+itemScore : '0'}đ)</span>`;
+        }
+        h += `<div class="card" style="border-left: 8px solid var(--primary)"><h3>${qText} ${scoreHTML}</h3>`;
+        if(q.img) h += `<img src="${q.img}" class="q-img" alt="Ảnh minh họa">`; 
+        if(q.type === 'mcq') {
+            (q.shuffledOptions || q.o).forEach((o, idx) => {
+                const isC = norm(o) === norm(q.a), isU = userAnswers[q.id] === o;
+                h += `<div class="option ${isC?'correct':(isU?'wrong':'')}"><b>${labels[idx]}.</b> ${o} ${isC?'✓':(isU?'✗':'')}</div>`;
+            });
+            if(norm(userAnswers[q.id]||'') !== norm(q.a)) h += `<div class="review-choice-box review-wrong" style="padding:10px; border-radius:8px; margin-top:10px; background:#fee2e2; border:1px solid #ef4444;">Bạn chọn: <b>${userAnswers[q.id]||'Chưa chọn'}</b>. Đáp án: <b style="color:#10b981">${q.a}</b></div>`;
+        } else if(q.type === 'tf') {
+            h += `<div style="background:#f1f5f9; padding:15px; border-radius:12px; margin-bottom:15px; font-style:italic;">${q.ctx}</div>`;
+            q.sts.forEach((st, si) => {
+                let uV = (userAnswers[q.id]||{})[si], isC = (uV === st.a);
+                h += `<div class="tf-row" style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #f1f5f9;"><span>${st.l} ${st.t}</span><div style="font-size:0.8rem; text-align:right;"><span style="color:${isC?'#10b981':'#ef4444'}">Bạn: <b>${uV===true?'Đúng':(uV===false?'Sai':'?')}</b></span><br><span>Đáp án: <b>${st.a?'Đúng':'Sai'}</b> ${isC?'✓':'✗'}</span></div></div>`;
+            });
+        } else {
+            const isC = norm(userAnswers[q.id]||'') === norm(q.a);
+            h += `<p>Bạn nhập: <b style="color:${isC?'#10b981':'#ef4444'}">${userAnswers[q.id]||'Trống'}</b></p><p>Đáp án đúng: <b style="color:#10b981">${q.a}</b> ${isC?'✓':'✗'}</p>`;
+        }
+        h += `<div class="explanation"><b>Giải thích:</b> ${q.e}</div></div>`;
+    });
+    content.innerHTML = h; 
+    const target = document.getElementById('review-heading');
+    if (target) { setTimeout(async () => { const y = target.getBoundingClientRect().top + window.pageYOffset - 20; window.scrollTo({ top: y, behavior: 'smooth' }); if(window.MathJax) await MathJax.typesetPromise([content]); }, 150); }
+};
+
+document.getElementById('btn-export-excel').onclick = () => {
+    const dataToExport = window.currentFilteredData || [];
+    if (dataToExport.length === 0) { showCustomAlert("Không có dữ liệu để xuất!"); return; }
+
+    const excelRows = dataToExport.map((item, index) => ({
+        "STT": index + 1,
+        "Họ và Tên": item.name || "input",
+        "Số báo danh": item.sbd || "input",
+        "Lớp": item.class || "input",
+        "Trường": item.school || "input",
+        "Chế độ làm": item.mode === 'practice' ? "Luyện tập" : "Kiểm tra",
+        "Điểm số": parseFloat(item.score || 0).toFixed(1),
+        "Thời gian làm (giây)": item.duration || 0,
+        "Ngày nộp bài": new Date(item.timestamp).toLocaleString('vi-VN')
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(excelRows);
+    const wscols = [{wch: 5}, {wch: 25}, {wch: 12}, {wch: 10}, {wch: 25}, {wch: 15}, {wch: 10}, {wch: 18}, {wch: 25}];
+    ws['!cols'] = wscols;
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Báo cáo học tập");
+    XLSX.writeFile(wb, `KetQua_Vly9_${new Date().getTime()}.xlsx`);
+};
+
+function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function startTimer() { clearInterval(timerInt); timerInt = setInterval(() => { timeLeft--; const m = Math.floor(timeLeft/60), s = timeLeft%60, el = document.getElementById('timer'); if(el) el.innerText = `${m}:${s.toString().padStart(2,'0')}`; if(timeLeft <= 0) calculateResult(); }, 1000); }
+
+// --- CHỐNG GIAN LẬN ---
+const triggerCheat = () => { 
+    if (canCheckCheat && isQuizRunning && mode === 'test' && !isProcessingCheat) { 
+        isProcessingCheat = true;
+        isQuizRunning = false; 
+        calculateResult(); 
+        document.getElementById('cheat-modal').style.display = 'flex'; 
+    } 
+};
+
+document.addEventListener('fullscreenchange', () => { 
+    if (canCheckCheat && isQuizRunning && mode === 'test' && !document.fullscreenElement) {
+        triggerCheat(); 
+    }
+});
+
+document.addEventListener('visibilitychange', () => { 
+    if(canCheckCheat && isQuizRunning && mode === 'test' && document.visibilityState === 'hidden') {
+        triggerCheat(); 
+    }
+});
+
+window.addEventListener('blur', () => {
+    setTimeout(() => {
+        if (canCheckCheat && isQuizRunning && mode === 'test' && !document.hasFocus()) {
+            triggerCheat();
+        }
+    }, 500);
+});
+
+window.onload = () => { 
+    document.getElementById('main-header').style.display = 'none'; 
+    if(localStorage.getItem('vly9_u')) document.getElementById('username').value = localStorage.getItem('vly9_u');
+    if(localStorage.getItem('vly9_s')) document.getElementById('user_school').value = localStorage.getItem('vly9_s');
+    if(localStorage.getItem('vly9_c')) document.getElementById('user_class').value = localStorage.getItem('vly9_c');
+};
+
+document.getElementById('username').oninput = (e) => localStorage.setItem('vly9_u', e.target.value);
+document.getElementById('user_school').oninput = (e) => localStorage.setItem('vly9_s', e.target.value);
+document.getElementById('user_class').oninput = (e) => localStorage.setItem('vly9_c', e.target.value);
 </script>
+</body>
+</html>
+
