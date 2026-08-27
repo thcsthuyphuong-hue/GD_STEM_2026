@@ -232,7 +232,7 @@
     </div>
     
     <div id="header-user-info" style="font-size: 0.8rem; color: #fff; font-weight: 500; text-align: center; flex-grow: 1; border-left: 2px solid rgba(255,255,255,0.2); border-right: 2px solid rgba(255,255,255,0.2); padding: 0 10px;">
-        HS: ... | SBD: ... | Lớp: ...
+        HS: ... | SBD: ... | Phường/ xã: ...
     </div>
     
     <div class="timer" id="timer" style="font-size: 1rem; padding: 5px 15px; min-width: 80px; text-align: center;">
@@ -241,7 +241,7 @@
 </header>
     <section id="screen-start" class="screen active">
         <div class="school-brand">
-            <h1 class="fire-text" style="font-size: 2.2rem;">ÔN TẬP KHOA HỌC TỰ NHIÊN 9</h1>
+            <h1 class="fire-text" style="font-size: 2.2rem;"> TÌM HIỂU GIÁO DỤC STEM </h1>
             <p style="color:white; opacity:0.8; margin-top:5px;">Chuyên đề: Tìm hiểu giáo dục STEM</p>
         </div>
         <div class="card" style="max-width: 550px; margin: -40px auto 30px auto; position: relative; z-index: 2; display: block;">
@@ -250,7 +250,7 @@
             <div style="margin-bottom: 15px;"><label style="font-size: 0.8rem; font-weight: bold; color: #64748b;">Họ và tên:</label><input type="text" id="username" placeholder="Nhập tên hoặc để trống (mặc định 'input')"></div>
             <div style="margin-bottom: 15px;"><label style="font-size: 0.8rem; font-weight: bold; color: #64748b;">Trường:</label><input type="text" id="user_school" placeholder="Nhập trường hoặc để trống (mặc định 'input')"></div>
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                <div style="margin-bottom: 15px;"><label style="font-size: 0.8rem; font-weight: bold; color: #64748b;">Lớp:</label><input type="text" id="user_class" placeholder="Ví dụ: 9A1"></div>
+                <div style="margin-bottom: 15px;"><label style="font-size: 0.8rem; font-weight: bold; color: #64748b;">Phường / xã:</label><input type="text" id="user_class" placeholder="Ví dụ: 9A1"></div>
                 <div style="margin-bottom: 25px;"><label style="font-size: 0.8rem; font-weight: bold; color: #64748b;">Số báo danh:</label><input type="text" id="user_sbd" placeholder="Ví dụ: 01"></div>
             </div>
             
@@ -327,9 +327,9 @@
                 </select>
             </div>
             <div style="flex:1; min-width: 130px;">
-                <label style="font-size: 0.7rem; font-weight: bold;">LỚP:</label>
+                <label style="font-size: 0.7rem; font-weight: bold;">Phường / xã:</label>
                 <select id="admin-filter-class" style="width:100%; padding:8px; border-radius:5px;">
-                    <option value="all">Tất cả lớp</option>
+                    <option value="all">Tất cả phường/ xã</option>
                 </select>
             </div>
             <div style="flex:1; min-width: 130px;">
@@ -347,7 +347,7 @@
             <table class="admin-table">
                 <thead>
                     <tr>
-                        <th>Hạng</th><th>SBD</th><th>Họ tên</th><th>Lớp</th><th>Trường</th><th>Chế độ</th><th>Điểm</th><th>TG Làm</th><th>Ngày</th><th>Xoá</th>
+                        <th>Hạng</th><th>SBD</th><th>Họ tên</th><th>Phường/xã</th><th>Trường</th><th>Chế độ</th><th>Điểm</th><th>TG Làm</th><th>Ngày</th><th>Xoá</th>
                     </tr>
                 </thead>
                 <tbody id="admin-list-body"></tbody>
@@ -500,7 +500,7 @@ const initGame = (m) => {
 // Cập nhật thông tin lên Header (Ngang hàng)
 const userInfoEl = document.getElementById('header-user-info');
 if (userInfoEl) {
-    userInfoEl.innerHTML = `<b>${name}</b> | SBD: <b>${sbd}</b> | Lớp: <b>${cls}</b>`;
+    userInfoEl.innerHTML = `<b>${name}</b> | SBD: <b>${sbd}</b> | Phường/xã: <b>${cls}</b>`;
 }
     mode = m;
     isQuizRunning = true; 
@@ -627,7 +627,7 @@ async function calculateResult() {
     document.getElementById('final-score').innerText = fs.toFixed(1);
     const u = window.finalUserData;
     document.getElementById('res-name').innerText = (u.name || "input").toUpperCase();
-    document.getElementById('res-meta').innerText = `${u.sch || "input"} | Lớp ${u.cls || "input"} | SBD ${u.sbd || "input"}`;
+    document.getElementById('res-meta').innerText = `${u.sch || "input"} | phường / xã ${u.cls || "input"} | SBD ${u.sbd || "input"}`;
     
     let rb = document.getElementById('rank-badge'), txt = 'CHƯA ĐẠT', col = '#64748b';
     if(fs >= 6.3) { txt='XUẤT SẮC'; col='#f59e0b'; } else if(fs >= 5.6) { txt='GIỎI'; col='#10b981'; } else if(fs >= 4.5) { txt='KHÁ'; col='#3b82f6'; } else if(fs >= 3.5) { txt='ĐẠT'; col='#8b5cf6'; }
@@ -663,7 +663,7 @@ async function renderAdmin() {
         const classes = [...new Set(rawData.map(i => i.class))].sort();
         const schools = [...new Set(rawData.map(i => i.school))].filter(s => s).sort();
         const fClass = document.getElementById('admin-filter-class'); const oldC = fClass.value;
-        fClass.innerHTML = '<option value="all">Tất cả lớp</option>' + classes.map(c => `<option value="${c}" ${c===oldC?'selected':''}>Lớp ${c}</option>`).join('');
+        fClass.innerHTML = '<option value="all">Tất cả Phường/xã</option>' + classes.map(c => `<option value="${c}" ${c===oldC?'selected':''}>Phường / xã ${c}</option>`).join('');
         const fSchool = document.getElementById('admin-filter-school'); const oldS = fSchool.value;
         fSchool.innerHTML = '<option value="all">Tất cả trường</option>' + schools.map(s => `<option value="${s}" ${s===oldS?'selected':''}>${s}</option>`).join('');
         const mFilter = document.getElementById('admin-filter-mode').value;
@@ -805,7 +805,7 @@ document.getElementById('btn-export-excel').onclick = () => {
         "STT": index + 1,
         "Họ và Tên": item.name || "input",
         "Số báo danh": item.sbd || "input",
-        "Lớp": item.class || "input",
+        "Phường / xã": item.class || "input",
         "Trường": item.school || "input",
         "Chế độ làm": item.mode === 'practice' ? "Luyện tập" : "Kiểm tra",
         "Điểm số": parseFloat(item.score || 0).toFixed(1),
