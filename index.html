@@ -1,3 +1,321 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ai Là Triệu Phú EDU 4.0 - Siêu Cấp</title>
+    <!-- Thư viện hỗ trợ -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/polyfill/3.111.0/polyfill.min.js"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap');
+        body { font-family: 'Roboto', sans-serif; background: #020617; color: white; overflow: hidden; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .bg-gradient-vtv3 { background: radial-gradient(circle at center, #001d3d 0%, #000814 100%); }
+        .gold-text { color: #ffc300; }
+        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(15px); border: 1px solid rgba(255,255,255,0.1); }
+        
+        /* Cố định khung hình điện thoại 9:16 chuyên nghiệp */
+        .mobile-frame { 
+            width: min(100vw, 420px); 
+            height: min(100vh, 746px); 
+            display: flex; 
+            flex-direction: column; 
+            position: relative; 
+            border: 2px solid #1e293b; 
+            box-shadow: 0 0 100px rgba(0,0,0,1); 
+            background: #000814;
+            overflow: hidden;
+            border-radius: 24px;
+        }
+        
+        /* Đồng bộ Font Size 14pt theo yêu cầu của Thầy */
+        #q-text, .option-btn, #q-number, #q-score-ui, .tf-btn, .info-label, .summary-text, .ms-text, .label-header { 
+            font-size: 14pt !important; 
+            font-weight: 700; 
+        }
+
+        #q-text { line-height: 1.35; margin-bottom: 0.8rem; text-align: left; }
+        .option-btn { 
+            background: linear-gradient(90deg, #003566 0%, #001d3d 100%); 
+            border: 2px solid #003566; 
+            transition: 0.1s; 
+            text-align: left; 
+            padding: 8px 14px; 
+            border-radius: 16px; 
+            width: 100%; 
+            color: white; 
+            display: flex; 
+            align-items: center; 
+        }
+        .option-btn:hover { border-color: #ffc300; transform: scale(1.01); }
+        .option-selected { background: #ffc300 !important; color: #000 !important; border-color: #ffd60a !important; }
+        .option-correct { background: #2ecc71 !important; color: white !important; border-color: #2ecc71 !important; }
+        .option-wrong { background: #e74c3c !important; color: white !important; border-color: #e74c3c !important; }
+        
+        /* Thu nhỏ thanh cuộn */
+        ::-webkit-scrollbar { width: 3px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+
+        /* Cột tiến trình sát lề trên 1cm và lề phải */
+        #right-panel { width: 18%; background: rgba(0,0,0,0.98); border-left: 1px solid rgba(255,255,255,0.1); padding-top: 1cm; display: flex; flex-direction: column; justify-content: flex-start; align-items: stretch; }
+        #ladder-container { display: flex; flex-direction: column-reverse; width: 100%; }
+        
+        /* Khoảng cách câu và điểm 2mm */
+        .ladder-row { display: grid; grid-template-columns: 1rem 1fr; gap: 2mm; padding: 2px 4px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 9px; font-weight: 700; color: #64748b; text-align: right; }
+        .ladder-row.active { background: #ffc300 !important; color: #000 !important; font-weight: 900; }
+        
+        .exam-grid { display: grid; grid-template-columns: 1fr; gap: 4px; padding: 5px; width: 100%; }
+        .exam-node { background: #1e293b; border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; padding: 10px 0; text-align: center; font-size: 10px; font-weight: 900; cursor: pointer; color: #64748b; }
+        .exam-node.done { background: #10b981; color: white; }
+        .exam-node.current { border: 2px solid #ffc300; color: #ffc300; }
+
+        .digit-box { width: 36px; height: 48px; background: #001d3d; border: 2px solid #ffc300; border-radius: 10px; text-align: center; font-size: 20px; font-weight: 900; color: #fff; outline: none; }
+        .tf-btn { font-size: 13pt !important; padding: 2px 6px; border-radius: 6px; font-weight: 900; min-width: 45px; line-height: 1.2; }
+
+        .avatar-corner { width: 55px; height: 55px; border-radius: 50%; border: 3px solid #ffc300; overflow: hidden; background: #1e293b; }
+        
+        .fixed-copyright-footer { position: absolute; bottom: 0; width: 100%; height: 35px; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.9); border-top: 1px solid rgba(255,255,255,0.1); z-index: 5000; pointer-events: none; }
+        .footer-text { font-size: 8px; color: rgba(255,255,255,0.4); text-transform: uppercase; text-align: center; }
+
+        /* Vùng cào điểm số phủ lên bảng vinh danh */
+        #scratch-card-wrapper { position: relative; width: 100%; max-width: 350px; margin: 15px auto; border-radius: 35px; overflow: hidden; }
+        #scratch-canvas { position: absolute; top: 0; left: 0; z-index: 20; cursor: crosshair; touch-action: none; width: 100%; height: 100%; border-radius: 35px; }
+        #result-info-box { position: relative; z-index: 10; width: 100%; opacity: 0; /* Hiện rõ dần khi cào */ }
+
+        #modal-delete-confirm { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.95); display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .delete-box { background: #1e293b; border: 4px solid #ef4444; padding: 25px; border-radius: 24px; width: 100%; max-width: 320px; text-align: center; }
+        
+        .hidden { display: none !important; }
+        .admin-table { font-size: 8px; width: 100%; border-collapse: collapse; background: white; color: black; }
+        .admin-table th { cursor: pointer; background: #0f172a; color: #ffc300; padding: 10px 4px; border: 1px solid #334155; }
+        .admin-table td { padding: 6px 3px; border: 1px solid #e2e8f0; text-align: center; font-weight: 600; }
+        
+        .milestone-modal { position: fixed; inset: 0; z-index: 3000; background: rgba(0,0,0,0.98); display: flex; align-items: center; justify-content: center; padding: 20px; text-align: center; }
+        .milestone-box { border: 8px solid #ffc300; background: #b91c1c; padding: 30px; border-radius: 30px; width: 100%; max-width: 380px; }
+    </style>
+</head>
+<body>
+
+<div id="app" class="mobile-frame bg-gradient-vtv3">
+    <div class="fixed-copyright-footer"><div class="footer-text">Bản quyền thuộc về Trường THCS Thuỷ Phương, Thành phố Huế</div></div>
+
+    <!-- MÀN HÌNH CHỦ -->
+    <div id="screen-home" class="flex-1 flex flex-col p-5 items-center justify-center space-y-4 text-center overflow-y-auto">
+        <div class="text-center">
+            <h1 class="text-2xl font-black gold-text italic drop-shadow-lg uppercase">Ai Là Triệu Phú Edu 4.0</h1>
+            <div class="bg-white text-blue-900 px-5 py-0.5 rounded-full font-black text-xs inline-block shadow-lg mt-1 tracking-widest uppercase"> Tìm hiểu giáo dục STEM</div>
+        </div>
+
+        <div class="flex space-x-5 w-full justify-center">
+            <div class="flex flex-col items-center">
+                <div class="rounded-full border-4 border-yellow-500 overflow-hidden cursor-pointer bg-slate-800 shadow-2xl" style="width: 75px; height: 75px;" onclick="document.getElementById('file-mc').click()">
+                    <img id="view-mc" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Sam" class="w-full h-full object-cover">
+                </div>
+                <span class="text-[8px] font-bold mt-1 opacity-70 uppercase text-white">Ảnh MC</span>
+                <input type="file" id="file-mc" class="hidden" accept="image/*" onchange="window.previewImg(this, 'view-mc', 'mc')">
+            </div>
+            <div class="flex flex-col items-center">
+                <div class="rounded-full border-4 border-blue-500 overflow-hidden cursor-pointer bg-slate-800 shadow-2xl" style="width: 75px; height: 75px;" onclick="document.getElementById('file-player').click()">
+                    <img id="view-player" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" class="w-full h-full object-cover">
+                </div>
+                <span class="text-[8px] font-bold mt-1 opacity-70 uppercase text-white">Thí sinh</span>
+                <input type="file" id="file-player" class="hidden" accept="image/*" onchange="window.previewImg(this, 'view-player', 'player')">
+            </div>
+        </div>
+
+        <div class="w-full space-y-2 glass p-5 rounded-[25px]">
+            <input type="text" id="in-name" placeholder="Họ và tên" class="w-full p-2.5 bg-white/10 rounded-lg outline-none text-white font-bold border border-white/10 text-sm">
+            <input type="text" id="in-sbd" placeholder="Số báo danh" class="w-full p-2.5 bg-white/10 rounded-lg outline-none text-white font-bold border border-white/10 text-sm">
+            <div class="grid grid-cols-3 gap-2">
+                <input type="text" id="in-class" placeholder="Lớp" class="w-full p-2.5 bg-white/10 rounded-lg outline-none text-white font-bold border border-white/10 text-sm">
+                <input type="text" id="in-school" placeholder="Trường" class="col-span-2 w-full p-2.5 bg-white/10 rounded-lg outline-none text-white font-bold border border-white/10 text-sm">
+            </div>
+        </div>
+
+        <div class="w-full space-y-2">
+            <div class="grid grid-cols-2 gap-2">
+                <button onclick="window.startGame('LUYEN_TAP')" class="bg-blue-600 py-4 rounded-xl font-black text-sm shadow-lg active:scale-95 transition-all uppercase text-white">Luyện Tập</button>
+                <button onclick="window.startGame('KIEM_TRA')" class="bg-green-600 py-4 rounded-xl font-black text-sm shadow-lg active:scale-95 transition-all uppercase text-white">Kiểm Tra</button>
+            </div>
+            <button onclick="window.startGame('GHE_NONG')" class="w-full bg-red-600 py-4.5 rounded-xl font-black text-lg shadow-xl active:scale-95 transition-all uppercase text-white font-black">Ngồi Vào Ghế Nóng</button>
+        </div>
+
+        <div class="flex space-x-2 w-full pb-8 text-white">
+            <button onclick="window.showModal('modal-rules')" class="flex-1 bg-slate-700 py-2.5 rounded-lg font-bold text-[9px] uppercase">Thể lệ</button>
+            <button onclick="window.showModal('modal-login')" class="flex-1 bg-slate-800 py-2.5 rounded-lg font-bold text-[9px] uppercase">Quản trị</button>
+        </div>
+    </div>
+
+    <!-- MÀN HÌNH CHƠI -->
+    <div id="screen-game" class="hidden flex-1 flex flex-col overflow-hidden">
+        <header class="p-2.5 bg-black/80 border-b border-white/10 flex justify-between items-center z-10">
+            <div class="flex items-center space-x-2">
+                <div class="avatar-corner border-yellow-500"><img id="game-mc-img" src="" class="w-full h-full object-cover"></div>
+                <div class="text-[8px] leading-tight">
+                    <p class="gold-text font-black uppercase">MC Truyền Hình</p>
+                    <p id="ui-timer" class="text-red-500 font-black text-[10px]">180s</p>
+                </div>
+            </div>
+            <div id="help-btns" class="flex space-x-1">
+                <button id="h-5050" onclick="window.useHelp('5050')" class="w-8 h-8 rounded-full bg-blue-700 border-2 border-white/20 text-[8px] font-black text-white">50:50</button>
+                <button id="h-audience" onclick="window.useHelp('audience')" class="w-8 h-8 rounded-full bg-blue-700 border-2 border-white/20 text-sm">👤</button>
+                <button id="h-call" onclick="window.useHelp('call')" class="w-8 h-8 rounded-full bg-blue-700 border-2 border-white/20 text-sm">📞</button>
+                <button id="h-expert" onclick="window.useHelp('expert')" class="hidden w-8 h-8 rounded-full bg-indigo-700 border-2 border-white/20 text-sm">🎓</button>
+            </div>
+            <div class="flex items-center space-x-1.5 text-right">
+                <div class="text-[8px] leading-tight overflow-hidden text-white">
+                    <p id="ui-p-name" class="font-black truncate w-24 uppercase text-blue-400 font-black"></p>
+                    <p id="ui-p-info" class="opacity-80"></p>
+                    <p id="ui-game-mode" class="opacity-100 gold-text font-black uppercase text-[7pt]"></p>
+                </div>
+                <div class="avatar-corner border-blue-500"><img id="game-player-img" src="" class="w-full h-full object-cover"></div>
+            </div>
+        </header>
+
+        <div class="flex flex-1 overflow-hidden">
+            <div class="flex-1 p-3 overflow-y-auto flex flex-col relative" id="game-content">
+                <div class="flex justify-between items-end border-b border-white/20 pb-1 mb-2">
+                    <span id="q-number" class="label-header gold-text italic font-black">CÂU 1</span>
+                    <span id="q-score-ui" class="label-header opacity-70 uppercase text-white font-black">ĐIỂM: 0.0</span>
+                </div>
+                <div id="q-text" class="glass p-4 rounded-xl text-white"></div>
+                <div id="q-options" class="grid grid-cols-1 gap-2"></div>
+                <div id="q-hint-box" class="hidden mt-4 p-4 bg-yellow-400/10 border border-yellow-400/30 rounded-2xl italic text-[10px] text-yellow-100 shadow-lg text-white font-black"></div>
+                <div class="h-32 shrink-0"></div>
+            </div>
+            <div id="right-panel">
+                <div id="ladder-container"></div>
+                <div id="exam-nav" class="hidden flex-1 overflow-y-auto">
+                    <div class="exam-grid" id="exam-grid"></div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="p-3 pb-8 bg-black border-t border-white/10 flex items-center justify-between z-20">
+            <button id="btn-stop" onclick="window.confirmStop()" class="hidden bg-red-900/40 text-red-400 px-3 py-2 rounded-lg font-black text-[9px] uppercase border border-red-500/30">Dừng chơi</button>
+            <div class="flex-1"></div>
+            <button id="btn-next" onclick="window.nextQ()" class="hidden bg-green-600 text-white px-6 py-3 rounded-lg font-black text-xs uppercase shadow-lg text-white">Tiếp tục</button>
+            <button id="btn-submit" onclick="window.submitAns()" class="bg-yellow-500 text-black px-8 py-3 rounded-lg font-black text-xs uppercase shadow-lg text-black font-black">Gửi kết quả</button>
+        </footer>
+    </div>
+
+    <!-- MÀN HÌNH VINH DANH -->
+    <div id="screen-result" class="hidden flex-1 flex flex-col items-center justify-center p-6 space-y-4 text-center overflow-y-auto">
+        <h1 class="text-2xl font-black gold-text italic uppercase">AI LÀ TRIỆU PHÚ EDU 4.0</h1>
+        
+        <p id="scratch-msg" class="hidden text-yellow-400 font-black mb-2 animate-bounce uppercase text-[10px]">Hãy cào để biết kết quả!</p>
+        
+        <div id="scratch-card-wrapper" class="hidden">
+            <!-- Bảng kết quả nằm bên dưới lớp cào -->
+            <div id="result-info-box" class="glass p-6 rounded-[35px] w-full border-2 border-white/10 shadow-2xl">
+                <div id="res-summary" class="summary-text mb-3 leading-relaxed text-white"></div>
+                <div id="simple-score-view" class="relative inline-block">
+                    <span id="res-score" class="text-7xl font-black text-yellow-400 font-black">0.0</span>
+                    <span class="absolute -top-2 -right-4 bg-red-600 px-2 py-0.5 rounded-full text-[8px] font-black uppercase text-white font-black">Điểm</span>
+                </div>
+                <div id="res-rank" class="mt-4 gold-text font-black text-xl uppercase text-center"></div>
+            </div>
+            <!-- Lớp phủ Canvas cào bạc -->
+            <canvas id="scratch-canvas"></canvas>
+        </div>
+
+        <button id="btn-show-hist" onclick="window.showHistory()" class="hidden w-full bg-blue-700 p-4 rounded-[20px] font-black text-sm shadow-xl uppercase text-white font-black">Sổ tay tri thức</button>
+        <button onclick="location.reload()" class="w-full bg-slate-800 p-4 rounded-[20px] font-black text-sm shadow-xl uppercase text-white font-black">Về trang chủ</button>
+    </div>
+
+    <!-- QUẢN TRỊ -->
+    <div id="screen-admin" class="hidden flex-1 flex flex-col bg-white text-black p-4 overflow-hidden text-black">
+        <div class="flex justify-between items-center mb-4 bg-slate-100 p-3 rounded-xl border border-slate-200">
+            <h2 class="font-black text-blue-900 uppercase text-xs">HỆ THỐNG QUẢN TRỊ</h2>
+            <button onclick="location.reload()" class="bg-red-600 text-white px-4 py-2 rounded-lg text-[9px] font-black shadow-lg">THOÁT</button>
+        </div>
+        <div class="grid grid-cols-2 gap-3 mb-4">
+            <button onclick="window.exportExcel()" class="bg-emerald-600 text-white py-3 rounded-lg font-black text-[9px] uppercase shadow-md text-white font-black">📊 XUẤT EXCEL (*.xlsx)</button>
+            <button onclick="window.showStats()" class="bg-indigo-600 text-white py-3 rounded-lg font-black text-[9px] uppercase shadow-md text-white font-black text-white">📈 THỐNG KÊ BIỂU ĐỒ</button>
+        </div>
+        <div class="flex-1 overflow-auto border-2 border-slate-200 rounded-2xl bg-slate-50 shadow-inner text-black">
+            <table class="admin-table w-full text-center">
+                <thead class="sticky top-0 bg-slate-200 font-black">
+                    <tr>
+                        <th onclick="window.sortAdmin('sbd')">SBD</th>
+                        <th onclick="window.sortAdmin('name')">Họ tên</th>
+                        <th onclick="window.sortAdmin('class')">Lớp</th>
+                        <th onclick="window.sortAdmin('school')">Trường</th>
+                        <th onclick="window.sortAdmin('score')">Điểm</th>
+                        <th>Xóa</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-tbody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- MODAL XÓA BẢO MẬT -->
+    <div id="modal-delete-confirm" class="hidden fixed inset-0 z-[9999] flex items-center justify-center p-6 bg-black/95">
+        <div class="delete-box">
+            <p class="text-white font-bold mb-4 text-sm">Xác nhận mật khẩu Quản trị để xóa:</p>
+            <input type="password" id="delete-pass-input" placeholder="********" class="w-full p-3 bg-white/5 rounded-xl border border-red-500/30 mb-4 text-center text-white outline-none">
+            <div class="flex space-x-2">
+                <button onclick="window.cancelDelete()" class="flex-1 bg-slate-700 py-2.5 rounded-lg font-bold text-white text-xs">HỦY</button>
+                <button onclick="window.confirmDelete()" class="flex-1 bg-red-600 py-2.5 rounded-lg font-black text-white text-xs">XÓA</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALS HỆ THỐNG -->
+    <div id="modal-login" class="hidden fixed inset-0 z-[100] bg-black/98 flex items-center justify-center p-8 text-black">
+        <div class="bg-slate-900 border-2 border-yellow-500/50 p-8 rounded-[40px] w-full max-w-xs text-center text-white">
+            <h3 class="gold-text font-black text-lg mb-6 uppercase text-center font-black">Xác thực Admin</h3>
+            <input type="password" id="admin-pass" placeholder="********" class="w-full p-3 bg-white/5 rounded-xl border border-red-500/30 mb-6 text-center text-white outline-none">
+            <div class="flex space-x-3">
+                <button onclick="window.hideModal('modal-login')" class="flex-1 bg-slate-700 p-2 rounded-lg font-bold text-white uppercase text-xs">Hủy</button>
+                <button onclick="window.checkAdmin()" class="flex-1 bg-yellow-500 text-black py-2 rounded-lg font-black uppercase text-xs text-white">Vào</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-rules" class="hidden fixed inset-0 z-[4000] bg-black/98 flex items-center justify-center p-6 text-white text-center">
+        <div class="bg-blue-900 border-4 border-yellow-500 p-6 rounded-[35px] w-full max-sm shadow-2xl text-white">
+            <h3 class="gold-text font-black text-xl mb-4 uppercase italic text-center"> THỂ LỆ TRÒ CHƠI AI LÀ TRIỆU PHÚ EDU 4.0</h3>
+            <div class="text-xs space-y-3 h-[40vh] overflow-y-auto pr-2 leading-relaxed font-medium text-left">
+                <p>1. Chinh phục 20 câu hỏi (12 Trắc nghiệm, 4 Đúng/Sai, 4 Trả lời ngắn).</p>
+                <p>2. Chế độ Luyện tập & Ghế nóng: Sai 1 câu dừng cuộc chơi ngay. Có 3 quyền trợ giúp: 50:50 (chỉ áp dụng từ câu 1 đến câu 12); Hỏi ý kiến khán giả; Gọi điện cho người thân; Từ câu hỏi thứ 13, có thêm quyền trợ giúp: hỏi ý kiến chuyên gia. </p>
+                <p>3. Nếu chọn KIỂM TRA: Phải làm đủ 20 câu mới được nộp bài.</p>
+                <p>4. Ở chế độ KIỂM TRA và NGỒI VÀO GHẾ NÓNG: Tuyệt đối không chuyển tab, hoặc chuyển sang màn hình khác, nếu vi phạm, hệ thống sẽ tự động thu bài.</p>
+            </div>
+            <button onclick="window.hideModal('modal-rules')" class="w-full mt-6 bg-yellow-500 text-black py-3 rounded-xl font-black shadow-xl uppercase font-black text-sm">Đóng</button>
+        </div>
+    </div>
+
+    <div id="modal-history" class="hidden fixed inset-0 z-[5000] bg-slate-100 overflow-y-auto p-5 text-black font-black">
+        <div class="flex justify-between items-center mb-6 border-b-2 border-slate-200 pb-4 sticky top-0 bg-slate-100 z-10 text-black">
+            <h3 class="text-xl font-black text-blue-900 uppercase italic text-center">Sổ tay tri thức</h3>
+            <button onclick="window.hideModal('modal-history')" class="bg-red-600 text-white px-6 py-2 rounded-full font-black text-xs uppercase shadow-lg text-white font-black">Đóng</button>
+        </div>
+        <div id="history-list" class="space-y-10 pb-20 text-left"></div>
+    </div>
+
+    <div id="milestone-modal" class="hidden milestone-modal">
+        <div class="milestone-box text-white">
+            <div class="milestone-title font-black text-white text-[16pt] uppercase mb-2">Chúc Mừng Bạn!</div>
+            <div id="ms-text" class="ms-text mb-8 leading-relaxed font-black text-white"></div>
+            <button onclick="window.closeMilestone()" class="bg-yellow-500 text-black px-12 py-4 rounded-full font-black text-xl shadow-2xl uppercase font-black text-white font-black">Tiếp tục hành trình</button>
+        </div>
+    </div>
+
+    <div id="modal-stats" class="hidden fixed inset-0 z-[1100] bg-black/95 flex items-center justify-center p-6 text-black text-center text-black">
+        <div class="bg-white p-8 rounded-[40px] w-full max-sm shadow-2xl text-center text-black">
+            <h3 class="text-xl font-black text-blue-900 mb-6 uppercase italic font-black">Biểu đồ chất lượng</h3>
+            <div id="stats-bars" class="space-y-4 text-left text-black"></div>
+            <button onclick="window.hideModal('modal-stats')" class="w-full mt-8 bg-red-600 text-white py-4 rounded-2xl font-black shadow-xl uppercase text-white font-black text-sm">Đóng</button>
+        </div>
+    </div>
+</div>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -15,19 +333,12 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
-    const appId = 'ailatrieuphuedu30bai50';
+    const appId = 'ailatrieuphuedu30';
 
     // --- UTILS ---
     const pingSound = new Audio('https://www.soundjay.com/buttons/sounds/button-37a.mp3');
     const playPing = () => { if(pingSound) { pingSound.currentTime = 0; pingSound.play().catch(()=>{}); } };
-    const shuffleArray = (arr) => { 
-        let a = [...arr];
-        for(let i=a.length-1; i>0; i--){ 
-            let j=Math.floor(Math.random()*(i+1)); 
-            [a[i],a[j]]=[a[j],a[i]]; 
-        } 
-        return a; 
-    };
+    const shuffleArray = (arr) => { for(let i=arr.length-1; i>0; i--){ let j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; };
 
     async function compressImage(base64Str) {
         return new Promise((resolve) => {
@@ -43,61 +354,8 @@
         });
     }
 
-    // --- NGÂN HÀNG CÂU HỎI (ĐÃ CHUẨN HÓA DỮ LIỆU) ---
-    const RAW_BANK = {
-      mcq: [
-        { id: "I.1", question: "STEM là sự tích hợp của các lĩnh vực nào?", options: ["Khoa học, công nghệ, kĩ thuật, toán học.", "Khoa học, cơ khí, kinh tế, mĩ thuật.", "Tự nhiên, xã hội, công nghệ, toán học.", "Vật lí, hóa học, sinh học, tin học."], correctAnswer: 0, explanation: "STEM là viết tắt của các lĩnh vực Science (Khoa học), Technology (Công nghệ), Engineering (Kĩ thuật) và Mathematics (Toán học)." },
-        { id: "I.2", question: "Bản chất của giáo dục STEM là gì?", options: ["Dạy học tách rời từng môn lí thuyết.", "Tiếp cận liên môn giải quyết thực tiễn.", "Chỉ đào tạo chuyên gia lập trình máy tính.", "Tổ chức các trò chơi giải trí ngoại khóa."], correctAnswer: 1, explanation: "Bản chất của giáo dục STEM là tiếp cận liên môn, giúp học sinh vận dụng kiến thức để giải quyết các vấn đề thực tiễn." },
-        { id: "I.3", question: "Mục tiêu cốt lõi của giáo dục STEM là gì?", options: ["Phát triển phẩm chất và năng lực học sinh.", "Bắt buộc học sinh thi học sinh giỏi quốc gia.", "Thay thế hoàn toàn sách giáo khoa hiện hành.", "Giảm thời gian học tập trên lớp của học sinh."], correctAnswer: 0, explanation: "Mục tiêu cốt lõi của giáo dục STEM là phát triển toàn diện phẩm chất và năng lực cho học sinh." },
-        { id: "I.4", question: "Thành tố T trong STEM viết tắt cho lĩnh vực nào?", options: ["Technology (Công nghệ).", "Technique (Kĩ thuật).", "Teaching (Giảng dạy).", "Theory (Lí thuyết)."], correctAnswer: 0, explanation: "Thành tố T đại diện cho Technology (Công nghệ)." },
-        { id: "I.5", question: "Thành tố E trong STEM viết tắt cho lĩnh vực nào?", options: ["Economics (Kinh tế).", "Education (Giáo dục).", "Engineering (Kĩ thuật).", "Environment (Môi trường)."], correctAnswer: 2, explanation: "Thành tố E đại diện cho Engineering (Kĩ thuật)." },
-        { id: "I.6", question: "Trong tiến trình STEM, bước đầu tiên học sinh làm gì?", options: ["Chế tạo đại trà sản phẩm.", "Xác định vấn đề cần giải quyết.", "Làm bài kiểm tra điểm số cuối kì.", "Viết báo cáo tổng kết năm học."], correctAnswer: 1, explanation: "Bước đầu tiên trong tiến trình STEM là xác định vấn đề hoặc nhiệm vụ cần giải quyết." },
-        { id: "I.7", question: "Mức độ trải nghiệm trong giáo dục STEM hướng tới điều gì?", options: ["Quan sát và khám phá hiện tượng.", "Tự chế tạo tên lửa không gian.", "Lập trình trí tuệ nhân tạo cấp cao.", "Nghiên cứu hàn lâm chuyên sâu."], correctAnswer: 0, explanation: "Mức độ trải nghiệm giúp học sinh quan sát, tìm tòi và khám phá các hiện tượng tự nhiên, đời sống." },
-        { id: "I.8", question: "Điểm khác biệt của mức độ thiết kế kĩ thuật là gì?", options: ["Chỉ đọc tài liệu lí thuyết sẵn có.", "Tạo ra sản phẩm giải quyết nhiệm vụ.", "Không cần sử dụng kiến thức toán học.", "Chỉ nghe giáo viên giảng bài trên bảng."], correctAnswer: 1, explanation: "Mức độ thiết kế kĩ thuật yêu cầu học sinh phải chế tạo ra sản phẩm cụ thể để giải quyết nhiệm vụ đặt ra." },
-        { id: "I.9", question: "Khi dạy học STEM, vai trò của giáo viên là gì?", options: ["Người truyền thụ kiến thức một chiều.", "Người hướng dẫn, hỗ trợ và cố vấn.", "Người làm thay mọi việc cho học sinh.", "Người đứng ngoài không quan tâm lớp."], correctAnswer: 1, explanation: "Giáo viên trong lớp học STEM đóng vai trò là người định hướng, hỗ trợ, cố vấn để học sinh tự chủ khám phá." },
-        { id: "I.10", question: "Phát biểu nào sau đây là SAI về giáo dục STEM?", options: ["Gắn kết lí thuyết với thực tiễn đời sống.", "Chỉ dành riêng cho học sinh giỏi xuất sắc.", "Rèn luyện kĩ năng làm việc nhóm hiệu quả.", "Phát triển tư duy sáng tạo cho học sinh."], correctAnswer: 1, explanation: "Giáo dục STEM dành cho tất cả học sinh chứ không phải chỉ riêng học sinh giỏi xuất sắc." },
-        { id: "I.11", question: "Môn học nào đóng vai trò định lượng trong STEM?", options: ["Ngữ văn.", "Lịch sử.", "Toán học.", "Âm nhạc."], correctAnswer: 2, explanation: "Toán học cung cấp các công cụ tính toán, đo đạc và đóng vai trò định lượng trong STEM." },
-        { id: "I.12", question: "Môn học nào cung cấp nguyên lí tự nhiên trong STEM?", options: ["Khoa học tự nhiên.", "Giáo dục công dân.", "Thể dục thể thao.", "Mỹ thuật hội họa."], correctAnswer: 0, explanation: "Khoa học tự nhiên cung cấp các nguyên lí, định luật nền tảng về thế giới tự nhiên." },
-        { id: "I.13", question: "Hình thức triển khai STEM phổ biến nhất ở trường phổ thông là gì?", options: ["Lồng ghép trong môn học chính khóa.", "Cho học sinh nghỉ học đi lao động.", "Chỉ dạy học vào ban đêm trực tuyến.", "Bắt buộc học sinh tự học ở nhà hoàn toàn."], correctAnswer: 0, explanation: "Hình thức triển khai phổ biến là lồng ghép các bài học STEM trong các môn học chính khóa." },
-        { id: "I.14", question: "Sản phẩm trong bài học STEM yêu cầu như thế nào?", options: ["Phải là thiết bị điện tử đắt tiền.", "Có tính ứng dụng giải quyết vấn đề.", "Bắt buộc phải nhập khẩu từ nước ngoài.", "Chỉ mang tính chất trang trí trưng bày."], correctAnswer: 1, explanation: "Sản phẩm STEM phải có tính ứng dụng thực tế để giải quyết vấn đề đặt ra." },
-        { id: "I.15", question: "Trong tiến trình STEM, kiến thức nền nhằm mục đích gì?", options: ["Làm cơ sở lí luận để thiết kế sản phẩm.", "Bắt học sinh học thuộc lòng không cần hiểu.", "Làm tăng độ khó của bài kiểm tra viết.", "Thay thế hoàn toàn thời gian thực hành."], correctAnswer: 0, explanation: "Kiến thức nền tảng là cơ sở lí luận để học sinh vận dụng vào việc thiết kế và chế tạo sản phẩm." },
-        { id: "I.16", question: "Hoạt động thử nghiệm sản phẩm nhằm mục đích gì?", options: ["Kiểm tra mức độ đáp ứng tiêu chí kĩ thuật.", "Làm hư hỏng sản phẩm để mua mới.", "Kéo dài thời gian nghỉ ngơi của lớp học.", "Trốn tránh việc báo cáo trước tập thể."], correctAnswer: 0, explanation: "Thử nghiệm giúp kiểm tra xem sản phẩm có đáp ứng các tiêu chí kĩ thuật đã đặt ra hay không." },
-        { id: "I.17", question: "Khi sản phẩm chưa đạt tiêu chuẩn, học sinh cần làm gì?", options: ["Bỏ cuộc và không làm nữa.", "Cải tiến và điều chỉnh thiết kế.", "Nhờ giáo viên làm hộ từ đầu.", "Che giấu khuyết điểm sản phẩm."], correctAnswer: 1, explanation: "Học sinh cần phân tích nguyên nhân, từ đó cải tiến và điều chỉnh thiết kế cho phù hợp." },
-        { id: "I.18", question: "Đặc điểm của nhiệm vụ mở trong STEM là gì?", options: ["Chỉ có duy nhất một đáp án đúng.", "Cho phép nhiều giải pháp sáng tạo.", "Không có bất kì quy định nào cả.", "Quá khó khiến học sinh không làm được."], correctAnswer: 1, explanation: "Nhiệm vụ mở cho phép học sinh tự do sáng tạo và đưa ra nhiều giải pháp khác nhau." },
-        { id: "I.19", question: "Công cụ nào thường dùng để đánh giá năng lực học sinh STEM?", options: ["Bảng tiêu chí rubrics.", "Điểm số ngẫu nhiên.", "Cảm tính của giáo viên.", "Thời gian nộp bài nhanh."], correctAnswer: 0, explanation: "Bảng tiêu chí rubrics là công cụ đánh giá khách quan và toàn diện quá trình cũng như sản phẩm của học sinh." },
-        { id: "I.20", question: "Vật liệu làm sản phẩm STEM ưu tiên loại nào?", options: ["Vật liệu tái chế, chi phí thấp.", "Linh kiện vàng bạc đắt tiền.", "Vật liệu độc hại nguy hiểm.", "Thiết bị quân sự chuyên dụng."], correctAnswer: 0, explanation: "Ưu tiên sử dụng các vật liệu tái chế, thân thiện môi trường và có chi phí thấp." },
-        { id: "I.21", question: "Ý nghĩa của việc làm việc nhóm trong STEM là gì?", options: ["Phát triển kĩ năng giao tiếp, hợp tác.", "Đùn đẩy công việc cho bạn khác.", "Gây mâu thuẫn giữa các thành viên.", "Giảm thời gian suy nghĩ cá nhân."], correctAnswer: 0, explanation: "Làm việc nhóm giúp học sinh phát triển kĩ năng giao tiếp, lắng nghe và hợp tác hiệu quả." },
-        { id: "I.22", question: "Thành tố S trong STEM là gì?", options: ["Science (Khoa học).", "Sport (Thể thao).", "System (Hệ thống).", "Student (Học sinh)."], correctAnswer: 0, explanation: "Thành tố S viết tắt của Science (Khoa học)." },
-        { id: "I.23", question: "Giáo dục STEM giúp học sinh kết nối điều gì?", options: ["Kiến thức nhà trường với thực tiễn.", "Lí thuyết suông với học thuộc lòng.", "Trò chơi điện tử với bạo lực học đường.", "Điểm số cá nhân với tiền bạc."], correctAnswer: 0, explanation: "STEM giúp thu hẹp khoảng cách giữa lí thuyết học đường và thực tiễn đời sống." },
-        { id: "I.24", question: "Phát biểu nào sau đây là ĐÚNG về giáo dục STEM?", options: ["Là phương thức giáo dục tích hợp liên môn.", "Chỉ là phong trào hình thức tạm thời.", "Thay thế hoàn toàn các môn khoa học xã hội.", "Không cần sự chuẩn bị kế hoạch bài dạy."], correctAnswer: 0, explanation: "Giáo dục STEM là phương thức giáo dục tích hợp liên môn nhằm phát triển năng lực người học." }
-      ],
-      truefalse: [
-        { id: "II.1", context: "Về khái niệm cơ bản của giáo dục STEM:", statements: [{ text: "STEM là phương thức giáo dục tích hợp liên môn.", correct: true }, { text: "Giáo dục STEM tách rời hoàn toàn bốn lĩnh vực độc lập.", correct: false }, { text: "STEM giúp học sinh ứng dụng kiến thức giải quyết thực tiễn.", correct: true }, { text: "Mục tiêu STEM là loại bỏ các môn khoa học tự nhiên.", correct: false }], explanation: "Ý a, c đúng vì STEM mang tính tích hợp và gắn liền thực tiễn; ý b, d sai vì STEM liên kết các môn chứ không loại bỏ." },
-        { id: "II.2", context: "Về các mức độ tổ chức giáo dục STEM:", statements: [{ text: "Mức độ trải nghiệm giúp học sinh quan sát, khám phá hiện tượng.", correct: true }, { text: "Mức độ thiết kế kĩ thuật yêu cầu tạo ra sản phẩm giải quyết vấn đề.", correct: true }, { text: "Mọi bài học STEM đều có chung một mức độ đơn giản.", correct: false }, { text: "Phân chia mức độ giúp giáo viên thiết kế bài dạy phù hợp.", correct: true }], explanation: "Ý c sai vì STEM có các mức độ từ trải nghiệm đến thiết kế kĩ thuật với độ phức tạp khác nhau." },
-        { id: "II.3", context: "Về tiến trình thiết kế kĩ thuật trong STEM:", statements: [{ text: "Bước đầu tiên là xác định vấn đề và tiêu chí sản phẩm.", correct: true }, { text: "Học sinh có thể chế tạo ngay mà không cần tìm hiểu kiến thức.", correct: false }, { text: "Thử nghiệm và cải tiến giúp hoàn thiện sản phẩm học tập.", correct: true }, { text: "Progress thiết kế kĩ thuật không tuân theo quy luật tư duy nào.", correct: false }], explanation: "Ý b sai vì cần có kiến thức nền; ý d sai vì tiến trình tuân thủ tư duy khoa học chặt chẽ." },
-        { id: "II.4", context: "Về vai trò các môn học trong STEM:", statements: [{ text: "Toán học cung cấp công cụ tính toán và đo đạc.", correct: true }, { text: "Khoa học tự nhiên cung cấp nguyên lí, định luật nền tảng.", correct: true }, { text: "Công nghệ hướng dẫn quy trình chế tạo sản phẩm.", correct: true }, { text: "Các môn học hoạt động đơn lẻ không liên quan nhau.", correct: false }], explanation: "Ý d sai vì các lĩnh vực trong STEM có sự liên kết chặt chẽ với nhau." },
-        { id: "II.5", context: "Về công tác đánh giá học sinh trong STEM:", statements: [{ text: "Chỉ đánh giá duy nhất qua bài thi viết lí thuyết.", correct: false }, { text: "Đánh giá toàn quá trình và sản phẩm thực tế của học sinh.", correct: true }, { text: "Sử dụng bảng tiêu chí rubrics để đánh giá khách quan.", correct: true }, { text: "Không cần tiêu chí đánh giá sản phẩm rõ ràng.", correct: false }], explanation: "Ý a, d sai vì đánh giá STEM cần toàn diện quá trình, sản phẩm và phải có tiêu chí rõ ràng." },
-        { id: "II.6", context: "Về điều kiện thực hiện giáo dục STEM:", statements: [{ text: "Có thể sử dụng vật liệu tái chế, chi phí thấp.", correct: true }, { text: "Bắt buộc phải có phòng thí nghiệm robot tỷ đô.", correct: false }, { text: "Sự sáng tạo của giáo viên là yếu tố quan trọng.", correct: true }, { text: "Địa phương khó khăn không thể triển khai STEM.", correct: false }], explanation: "Ý b, d sai vì STEM rất linh hoạt, tận dụng vật liệu địa phương và không bắt buộc thiết bị đắt tiền." },
-        { id: "II.7", context: "Về ý nghĩa của STEM đối với học sinh:", statements: [{ text: "Phát triển năng lực giải quyết vấn đề thực tiễn.", correct: true }, { text: "Rèn luyện kĩ năng làm việc nhóm và giao tiếp.", correct: true }, { text: "Làm giảm sút năng lực tư duy sáng tạo của học sinh.", correct: false }, { text: "Kích thích niềm đam mê khoa học kĩ thuật.", correct: true }], explanation: "Ý c sai vì STEM thúc đẩy mạnh mẽ tư duy sáng tạo và hứng thú học tập." },
-        { id: "II.8", context: "Về vai trò của giáo viên trong lớp học STEM:", statements: [{ text: "Chuyển từ truyền thụ sang người định hướng, hỗ trợ.", correct: true }, { text: "Làm thay mọi việc khó khăn thay cho học sinh.", correct: false }, { text: "Khích lệ học sinh tự khám phá, chế tạo sản phẩm.", correct: true }, { text: "Áp đặt duy nhất một cách làm rập khuôn.", correct: false }], explanation: "Ý b, d sai vì giáo viên chỉ hỗ trợ định hướng, học sinh phải chủ động và sáng tạo." }
-      ],
-      short: [
-        { id: "III.1", question: "Cho các nhận định sau về các lĩnh vực cấu thành STEM:\n1. STEM viết tắt của Khoa học, Công nghệ, Kĩ thuật, Toán học.\n2. Giáo dục STEM loại bỏ hoàn toàn các môn tự nhiên.\n3. Bản chất STEM là tiếp cận liên môn giải quyết thực tiễn.\n4. Mục tiêu STEM là nhồi nhét lí thuyết hàn lâm.\n5. Toán học đóng vai trò công cụ định lượng trong STEM.\n6. Sản phẩm STEM bắt buộc phải mua linh kiện ngoại.\n7. STEM góp phần phát triển năng lực học sinh.\n8. Giáo dục STEM chỉ là hoạt động ngoại khóa đơn thuần.", answer: "1357", explanation: "Các nhận định đúng là 1, 3, 5, 7." },
-        { id: "III.2", question: "Cho các nhận định sau về các mức độ tổ chức STEM:\n1. Mức độ trải nghiệm giúp quan sát hiện tượng tự nhiên.\n2. Mức độ thiết kế kĩ thuật yêu cầu chế tạo sản phẩm.\n3. Tất cả bài học STEM chỉ có một mức độ duy nhất.\n4. Lồng ghép chính khóa là hình thức triển khai phổ biến.\n5. Không cần chọn mức độ phù hợp với đối tượng học sinh.\n6. Mức độ thiết kế đòi hỏi tích hợp kiến thức liên môn.\n7. Hoạt động STEM chỉ tổ chức ngoài hè ở ngoài trường.\n8. Phân loại mức độ giúp lập kế hoạch dạy học tốt hơn.", answer: "1246", explanation: "Các nhận định đúng là 1, 2, 4, 6." },
-        { id: "III.3", question: "Ngày 14/8/2020, Bộ GD&ĐT đã ban hành Công văn về việc triển khai thực hiện giáo dục STEM trong trường trung học, đó là công văn số mấy?", answer: "3098", explanation: "Công văn số 3098/BGDĐT-GDTrH hướng dẫn thực hiện giáo dục STEM trong giáo dục trung học." },
-        { id: "III.4", question: "Cho các nhận định sau về vai trò giáo viên và học sinh:\n1. Giáo viên là người định hướng, hỗ trợ, cố vấn.\n2. Học sinh chủ động khám phá và làm việc nhóm.\n3. Giáo viên làm thay toàn bộ các công đoạn khó.\n4. Học sinh được đưa ra nhiều giải pháp sáng tạo.\n5. Lớp học STEM khuyến khích tranh luận, phản biện.\n6. Giáo viên bắt học sinh sao chép y hệt một cách làm.\n7. Học sinh tự đánh giá và đánh giá chéo sản phẩm.\n8. Giáo viên chỉ chấm điểm giấy cuối kì duy nhất.", answer: "1245", explanation: "Các nhận định đúng là 1, 2, 4, 5." },
-        { id: "III.5", question: "Cho các nhận định sau về kiểm tra, đánh giá trong STEM:\n1. Đánh giá toàn diện cả quá trình và sản phẩm.\n2. Chỉ dùng bài thi tự luận viết tay truyền thống.\n3. Sử dụng rubrics là công cụ đánh giá hiệu quả.\n4. Đánh giá thái độ làm việc nhóm của học sinh.\n5. Tiêu chí đánh giá cần rõ ràng và công khai.\n6. Giáo viên chấm điểm dựa vào cảm tính cá nhân.\n7. Khuyến khích tự đánh giá và đánh giá đồng đẳng.\n8. Kết quả đánh giá không có giá trị phản hồi.", answer: "1345", explanation: "Các nhận định đúng là 1, 3, 4, 5." },
-        { id: "III.6", question: "Cho các nhận định sau về vật liệu và điều kiện STEM:\n1. Có thể dùng vật liệu tái chế, chi phí thấp.\n2. Bắt buộc phải có phòng lab robot đắt tiền.\n3. Tận dụng vật dụng sinh hoạt hằng ngày làm học liệu.\n4. Sự sáng tạo của giáo viên là yếu tố quyết định.\n5. Địa phương khó khăn không thể triển khai STEM.\n6. Công nghệ thông tin hỗ trợ đắc lực cho bài học.\n7. Huy động nguồn lực xã hội hóa từ phụ huynh.\n8. Học sinh cấm mang vật liệu từ nhà đến lớp.", answer: "1346", explanation: "Các nhận định đúng là 1, 3, 4, 6." },
-        { id: "III.7", question: "Cho các nhận định sau về ý nghĩa của giáo dục STEM:\n1. Phát triển phẩm chất và năng lực học sinh.\n2. Vận dụng kiến thức liên môn giải quyết thực tiễn.\n3. Biến học sinh thành cỗ máy ghi nhớ máy móc.\n4. Rèn luyện kĩ năng mềm: làm việc nhóm, phản biện.\n5. Kích thích đam mê nghiên cứu khoa học kĩ thuật.\n6. Làm giảm sút học tập văn hóa trên lớp.\n7. Tạo cơ hội hiện thực hóa ý tưởng sáng tạo.\n8. Gây áp lực tâm lí căng thẳng quá mức cho học sinh.", answer: "1245", explanation: "Các nhận định đúng là 1, 2, 4, 5." },
-        { id: "III.8", question: "Ngày 26/12/2018, lần đầu tiên, Bộ GD&ĐT đưa khái niệm giáo dục STEM vào trong chương trình giáo dục phổ thông, đó là thông tư số mấy?", answer: "32", explanation: "Thông tư số 32/2018/TT-BGDĐT ban hành Chương trình giáo dục phổ thông mới, lần đầu chính thức đưa giáo dục STEM vào chương trình." }
-      ]
-    };
-
-    // Chuẩn hóa dữ liệu sang cấu trúc game
-    const BANK_MCQ = RAW_BANK.mcq.map(item => ({ q: item.question, a: item.options, c: item.correctAnswer, ex: item.explanation }));
-    const BANK_TF = RAW_BANK.truefalse.map(item => ({ q: item.context, items: item.statements.map(s => s.text), c: item.statements.map(s => s.correct), ex: item.explanation }));
-    const BANK_SHORT = RAW_BANK.short.map(item => ({ q: item.question, c: item.answer, ex: item.explanation }));
-
+    // --- NGÂN HÀNG CÂU HỎI ---
+const QUESTION_BANK = { mcq: [ { id: "STEM.1", question: "STEM là sự tích hợp của các lĩnh vực nào?", options: [ "Khoa học, công nghệ, kĩ thuật, toán học.", "Khoa học, cơ khí, kinh tế, mĩ thuật.", "Tự nhiên, xã hội, công nghệ, toán học.", "Vật lí, hóa học, sinh học, tin học." ], correctAnswer: 0, explanation: "STEM là viết tắt của các lĩnh vực Science (Khoa học), Technology (Công nghệ), Engineering (Kĩ thuật) và Mathematics (Toán học)." }, { id: "STEM.2", question: "Bản chất của giáo dục STEM là gì?", options: [ "Dạy học tách rời từng môn lí thuyết.", "Tiếp cận liên môn giải quyết thực tiễn.", "Chỉ đào tạo chuyên gia lập trình máy tính.", "Tổ chức các trò chơi giải trí ngoại khóa." ], correctAnswer: 1, explanation: "Bản chất của giáo dục STEM là phương thức giáo dục tích hợp theo tiếp cận liên môn, giúp học sinh áp dụng kiến thức giải quyết vấn đề thực tiễn." }, { id: "STEM.3", question: "Mục tiêu cốt lõi của giáo dục STEM là gì?", options: [ "Phát triển phẩm chất và năng lực học sinh.", "Bắt buộc học sinh thi học sinh giỏi quốc gia.", "Thay thế hoàn toàn sách giáo khoa hiện hành.", "Giảm thời gian học tập trên lớp của học sinh." ], correctAnswer: 0, explanation: "Mục tiêu cốt lõi là phát triển phẩm chất, năng lực người học, hình thành khả năng vận dụng kiến thức vào thực tiễn." }, { id: "STEM.4", question: "Thành tố T trong STEM viết tắt cho lĩnh vực nào?", options: [ "Technology (Công nghệ).", "Technique (Kĩ thuật).", "Teaching (Giảng dạy).", "Theory (Lí thuyết)." ], correctAnswer: 0, explanation: "Thành tố T là Technology, đại diện cho lĩnh vực công nghệ." }, { id: "STEM.5", question: "Thành tố E trong STEM viết tắt cho lĩnh vực nào?", options: [ "Economics (Kinh tế).", "Education (Giáo dục).", "Engineering (Kĩ thuật).", "Environment (Môi trường)." ], correctAnswer: 2, explanation: "Thành tố E là Engineering, đại diện cho lĩnh vực kĩ thuật." }, { id: "STEM.6", question: "Trong tiến trình STEM, bước đầu tiên học sinh làm gì?", options: [ "Chế tạo đại trà sản phẩm.", "Xác định vấn đề cần giải quyết.", "Làm bài kiểm tra điểm số cuối kì.", "Viết báo cáo tổng kết năm học." ], correctAnswer: 1, explanation: "Bước đầu tiên của tiến trình thiết kế kĩ thuật trong STEM là xác định vấn đề, nhiệm vụ cần giải quyết." }, { id: "STEM.7", question: "Mức độ trải nghiệm trong giáo dục STEM hướng tới điều gì?", options: [ "Quan sát và khám phá hiện tượng.", "Tự chế tạo tên lửa không gian.", "Lập trình trí tuệ nhân tạo cấp cao.", "Nghiên cứu hàn lâm chuyên sâu." ], correctAnswer: 0, explanation: "Mức độ trải nghiệm giúp học sinh quan sát, tìm tòi và khám phá các hiện tượng tự nhiên, đời sống." }, { id: "STEM.8", question: "Điểm khác biệt của mức độ thiết kế kĩ thuật là gì?", options: [ "Chỉ đọc tài liệu lí thuyết sẵn có.", "Tạo ra sản phẩm giải quyết nhiệm vụ.", "Không cần sử dụng kiến thức toán học.", "Chỉ nghe giáo viên giảng bài trên bảng." ], correctAnswer: 1, explanation: "Mức độ thiết kế kĩ thuật yêu cầu học sinh phải chế tạo ra mô hình, sản phẩm cụ thể để giải quyết vấn đề đặt ra." }, { id: "STEM.9", question: "Khi dạy học STEM, vai trò của giáo viên là gì?", options: [ "Người truyền thụ kiến thức một chiều.", "Người hướng dẫn, hỗ trợ và cố vấn.", "Người làm thay mọi việc cho học sinh.", "Người đứng ngoài không quan tâm lớp." ], correctAnswer: 1, explanation: "Giáo viên đóng vai trò người thiết kế, định hướng, hỗ trợ và cố vấn cho học sinh hoạt động." }, { id: "STEM.10", question: "Phát biểu nào sau đây là SAI về giáo dục STEM?", options: [ "Gắn kết lí thuyết với thực tiễn đời sống.", "Chỉ dành riêng cho học sinh giỏi xuất sắc.", "Rèn luyện kĩ năng làm việc nhóm hiệu quả.", "Phát triển tư duy sáng tạo cho học sinh." ], correctAnswer: 1, explanation: "Giáo dục STEM dành cho mọi đối tượng học sinh, không phải chỉ dành riêng cho học sinh giỏi xuất sắc." }, { id: "STEM.11", question: "Môn học nào đóng vai trò định lượng trong STEM?", options: [ "Ngữ văn.", "Lịch sử.", "Toán học.", "Âm nhạc." ], correctAnswer: 2, explanation: "Toán học cung cấp các công cụ tính toán, đo đạc và định lượng trong các bài học STEM." }, { id: "STEM.12", question: "Môn học nào cung cấp nguyên lí tự nhiên trong STEM?", options: [ "Khoa học tự nhiên.", "Giáo dục công dân.", "Thể dục thể thao.", "Mỹ thuật hội họa." ], correctAnswer: 0, explanation: "Khoa học tự nhiên cung cấp các định luật, nguyên lí khoa học làm nền tảng cho việc giải quyết vấn đề." }, { id: "STEM.13", question: "Hình thức triển khai STEM phổ biến nhất ở trường phổ thông là gì?", options: [ "Lồng ghép trong môn học chính khóa.", "Cho học sinh nghỉ học đi lao động.", "Chỉ dạy học vào ban đêm trực tuyến.", "Bắt buộc học sinh tự học ở nhà hoàn toàn." ], correctAnswer: 1, explanation: "Hình thức phổ biến là tổ chức các bài học STEM lồng ghép thông qua các hoạt động giáo dục chính khóa." }, { id: "STEM.14", question: "Sản phẩm trong bài học STEM yêu cầu như thế nào?", options: [ "Phải là thiết bị điện tử đắt tiền.", "Có tính ứng dụng giải quyết vấn đề.", "Bắt buộc phải nhập khẩu từ nước ngoài.", "Chỉ mang tính chất trang trí trưng bày." ], correctAnswer: 1, explanation: "Sản phẩm STEM phải có tính thực tiễn, đáp ứng các tiêu chí kĩ thuật để giải quyết vấn đề đặt ra." }, { id: "STEM.15", question: "Trong tiến trình STEM, kiến thức nền nhằm mục đích gì?", options: [ " Làm cơ sở lí luận để thiết kế sản phẩm.", "Bắt học sinh học thuộc lòng không cần hiểu.", "Làm tăng độ khó của bài kiểm tra viết.", "Thay thế hoàn toàn thời gian thực hành." ], correctAnswer: 0, explanation: "Kiến thức nền là cơ sở khoa học để học sinh vận dụng vào việc thiết kế và chế tạo sản phẩm." }, { id: "STEM.16", question: "Hoạt động thử nghiệm sản phẩm nhằm mục đích gì?", options: [ "Kiểm tra mức độ đáp ứng tiêu chí kĩ thuật.", "Làm hư hỏng sản phẩm để mua mới.", "Kéo dài thời gian nghỉ ngơi của lớp học.", "Trốn tránh việc báo cáo trước tập thể." ], correctAnswer: 0, explanation: "Thử nghiệm giúp kiểm tra xem sản phẩm có đạt các tiêu chí đặt ra hay không để tiến hành cải tiến." }, { id: "STEM.17", question: "Khi sản phẩm chưa đạt tiêu chuẩn, học sinh cần làm gì?", options: [ "Bỏ cuộc và không làm nữa.", "Cải tiến và điều chỉnh thiết kế.", "Nhờ giáo viên làm hộ từ đầu.", "Che giấu khuyết điểm sản phẩm." ], correctAnswer: 1, explanation: "Quá trình thiết kế kĩ thuật luôn đòi hỏi việc thử nghiệm, đánh giá, từ đó cải tiến và điều chỉnh thiết kế." }, { id: "STEM.18", question: "Đặc điểm của nhiệm vụ mở trong STEM là gì?", options: [ "Chỉ có duy nhất một đáp án đúng.", "Cho phép nhiều giải pháp sáng tạo.", "Không có bất kì quy định nào cả.", "Quá khó khiến học sinh không làm được." ], correctAnswer: 1, explanation: "Nhiệm vụ mở cho phép học sinh tự do sáng tạo và đưa ra nhiều giải pháp, thiết kế khác nhau." }, { id: "STEM.19", question: "Công cụ nào thường dùng để đánh giá năng lực học sinh STEM?", options: [ "Bảng tiêu chí rubrics.", "Điểm số ngẫu nhiên.", "Cảm tính của giáo viên.", "Thời gian nộp bài nhanh." ], correctAnswer: 0, explanation: "Bảng tiêu chí (Rubrics) là công cụ đánh giá toàn diện quá trình và sản phẩm của học sinh một cách khách quan." }, { id: "STEM.20", question: "Vật liệu làm sản phẩm STEM ưu tiên loại nào?", options: [ "Vật liệu tái chế, chi phí thấp.", "Linh kiện vàng bạc đắt tiền.", "Vật liệu độc hại nguy hiểm.", "Thiết bị quân sự chuyên dụng." ], correctAnswer: 0, explanation: "Giáo dục STEM khuyến khích sử dụng vật liệu gần gũi, dễ tìm, vật liệu tái chế, chi phí thấp." }, { id: "STEM.21", question: "Ý nghĩa của việc làm việc nhóm trong STEM là gì?", options: [ "Phát triển kĩ năng giao tiếp, hợp tác.", "Đùn đẩy công việc cho bạn khác.", "Gây mâu thuẫn giữa các thành viên.", "Giảm thời gian suy nghĩ cá nhân." ], correctAnswer: 0, explanation: "Làm việc nhóm giúp học sinh phát triển năng lực giao tiếp, hợp tác và phân chia công việc hiệu quả." }, { id: "STEM.22", question: "Thành tố S trong STEM là gì?", options: [ "Science (Khoa học).", "Sport (Thể thao).", "System (Hệ thống).", "Student (Học sinh)." ], correctAnswer: 0, explanation: "Thành tố S là Science, chỉ lĩnh vực khoa học." }, { id: "STEM.23", question: "Giáo dục STEM giúp học sinh kết nối điều gì?", options: [ "Kiến thức nhà trường với thực tiễn.", "Lí thuyết suông với học thuộc lòng.", "Trò chơi điện tử với bạo lực học đường.", "Điểm số cá nhân với tiền bạc." ], correctAnswer: 0, explanation: "Giáo dục STEM tạo cầu nối vững chắc đưa kiến thức hàn lâm trong sách vở vào giải quyết các vấn đề thực tiễn." }, { id: "STEM.24", question: "Phát biểu nào sau đây là ĐÚNG về giáo dục STEM?", options: [ "Là phương thức giáo dục tích hợp liên môn.", "Chỉ là phong trào hình thức tạm thời.", "Thay thế hoàn toàn các môn khoa học xã hội.", "Không cần sự chuẩn bị kế hoạch bài dạy." ], correctAnswer: 0, explanation: "STEM là phương thức giáo dục tích hợp liên môn nhằm phát triển năng lực giải quyết vấn đề cho học sinh." } ], truefalse: [ { id: "STEM.25", context: "Về bản chất và mục tiêu của giáo dục STEM:", statements: [ { text: "STEM là phương thức giáo dục tích hợp liên môn.", correct: true }, { text: "Giáo dục STEM tách rời hoàn toàn bốn lĩnh vực độc lập.", correct: false }, { text: "STEM giúp học sinh ứng dụng kiến thức giải quyết thực tiễn.", correct: true }, { text: "Mục tiêu STEM là loại bỏ các môn khoa học tự nhiên.", correct: false } ], explanation: "a) Đúng, STEM tích hợp 4 lĩnh vực; b) Sai, STEM mang tính liên môn; c) Đúng, gắn liền thực tiễn; d) Sai, STEM phát triển các môn khoa học." }, { id: "STEM.26", context: "Về các mức độ tổ chức giáo dục STEM:", statements: [ { text: "Mức độ trải nghiệm giúp học sinh quan sát, khám phá hiện tượng.", correct: true }, { text: "Mức độ thiết kế kĩ thuật yêu cầu tạo ra sản phẩm giải quyết vấn đề.", correct: true }, { text: "Mọi bài học STEM đều có chung một mức độ đơn giản.", correct: false }, { text: "Phân chia mức độ giúp giáo viên thiết kế bài dạy phù hợp.", correct: true } ], explanation: "a) Đúng, trải nghiệm giúp khám phá; b) Đúng, thiết kế kĩ thuật tạo sản phẩm; c) Sai, các mức độ phức tạp khác nhau; d) Đúng, giúp định hướng sư phạm." }, { id: "STEM.27", context: "Về tiến trình thiết kế kĩ thuật trong STEM:", statements: [ { text: "Bước đầu tiên là xác định vấn đề và tiêu chí sản phẩm.", correct: true }, { text: "Học sinh có thể chế tạo ngay mà không cần tìm hiểu kiến thức.", correct: false }, { text: "Thử nghiệm và cải tiến giúp hoàn thiện sản phẩm học tập.", correct: true }, { text: "Tiến trình kĩ thuật không tuân theo quy luật tư duy nào.", correct: false } ], explanation: "a) Đúng, cần xác định rõ nhiệm vụ; b) Sai, cần có kiến thức nền; c) Đúng, thử nghiệm giúp tối ưu hóa; d) Sai, tuân thủ quy trình khoa học." }, { id: "STEM.28", context: "Về vai trò các môn học trong giáo dục STEM:", statements: [ { text: "Toán học cung cấp công cụ tính toán và đo đạc.", correct: true }, { text: "Khoa học tự nhiên cung cấp nguyên lí, định luật nền tảng.", correct: true }, { text: "Công nghệ hướng dẫn quy trình chế tạo sản phẩm.", correct: true }, { text: "Các môn học hoạt động đơn lẻ không liên quan nhau.", correct: false } ], explanation: "a, b, c đúng vì các môn có vai trò bổ trợ và tích hợp; d) Sai vì các môn liên kết chặt chẽ." }, { id: "STEM.29", context: "Về công tác đánh giá học sinh trong STEM:", statements: [ { text: "Chỉ đánh giá duy nhất qua bài thi viết lí thuyết.", correct: false }, { text: "Đánh giá toàn quá trình và sản phẩm thực tế của học sinh.", correct: true }, { text: "Sử dụng bảng tiêu chí rubrics để đánh giá khách quan.", correct: true }, { text: "Không cần tiêu chí đánh giá sản phẩm rõ ràng.", correct: false } ], explanation: "a) Sai, đánh giá toàn diện; b, c) Đúng, đánh giá quá trình/sản phẩm bằng rubrics; d) Sai, tiêu chí đánh giá là bắt buộc." }, { id: "STEM.30", context: "Về điều kiện thực hiện giáo dục STEM tại nhà trường:", statements: [ { text: "Có thể sử dụng vật liệu tái chế, chi phí thấp.", correct: true }, { text: "Bắt buộc phải có phòng thí nghiệm robot tỷ đô.", correct: false }, { text: "Sự sáng tạo của giáo viên là yếu tố quan trọng.", correct: true }, { text: "Địa phương khó khăn không thể triển khai STEM.", correct: false } ], explanation: "a, c) Đúng vì tận dụng vật liệu mở và sáng tạo sư phạm; b, d) Sai vì STEM rất linh hoạt, phù hợp mọi điều kiện." }, { id: "STEM.31", context: "Về ý nghĩa của giáo dục STEM đối với học sinh:", statements: [ { text: "Phát triển năng lực giải quyết vấn đề thực tiễn.", correct: true }, { text: "Rèn luyện kĩ năng làm việc nhóm và giao tiếp.", correct: true }, { text: "Làm giảm sút năng lực tư duy sáng tạo của học sinh.", correct: false }, { text: "Kích thích niềm đam mê khoa học kĩ thuật.", correct: true } ], explanation: "a, b, d đúng là các ưu điểm lớn của STEM; c) Sai vì STEM thúc đẩy tư duy sáng tạo mạnh mẽ." }, { id: "STEM.32", context: "Về vai trò của giáo viên trong lớp học STEM:", statements: [ { text: "Chuyển từ truyền thụ sang người định hướng, hỗ trợ.", correct: true }, { text: "Làm thay mọi việc khó khăn thay cho học sinh.", correct: false }, { text: "Khuyến khích học sinh tự khám phá, chế tạo sản phẩm.", correct: true }, { text: "Áp đặt duy nhất một cách làm rập khuôn.", correct: false } ], explanation: "a, c) Đúng, GV là người hỗ trợ và thúc đẩy tính chủ động; b, d) Sai, học sinh tự làm và sáng tạo." } ], short: [ { id: "STEM.33", q: "Cho các nhận định sau về giáo dục STEM:\n1. STEM là phương thức giáo dục tích hợp liên môn.\n2. Giáo dục STEM loại bỏ hoàn toàn các môn tự nhiên.\n3. Bản chất STEM là tiếp cận liên môn giải quyết thực tiễn.\n4. Mục tiêu STEM là nhồi nhét lí thuyết hàn lâm.\n5. Toán học đóng vai trò công cụ định lượng trong STEM.\n6. Sản phẩm STEM bắt buộc phải mua linh kiện ngoại.\n7. STEM góp phần phát triển năng lực học sinh.\n8. Giáo dục STEM chỉ là hoạt động ngoại khóa đơn thuần.", c: "1357", ex: "Các nhận định đúng là 1, 3, 5, 7 vì phản ánh đúng bản chất tích hợp, công cụ định lượng và mục tiêu phát triển năng lực của STEM." }, { id: "STEM.34", q: "Cho các nhận định sau về các mức độ tổ chức STEM:\n1. Mức độ trải nghiệm giúp quan sát hiện tượng tự nhiên.\n2. Mức độ thiết kế kĩ thuật yêu cầu chế tạo sản phẩm.\n3. Tất cả bài học STEM chỉ có một mức độ duy nhất.\n4. Lồng ghép chính khóa là hình thức triển khai phổ biến.\n5. Không cần chọn mức độ phù hợp với đối tượng học sinh.\n6. Mức độ thiết kế đòi hỏi tích hợp kiến thức liên môn.\n7. Hoạt động STEM chỉ tổ chức ngoài hè ở ngoài trường.\n8. Phân loại mức độ giúp lập kế hoạch dạy học tốt hơn.", c: "1246", ex: "Các nhận định đúng là 1, 2, 4, 6 vì mô tả chính xác các mức độ, hình thức triển khai và đặc điểm tích hợp trong bài học STEM." }, { id: "STEM.35", q: "Cho các nhận định sau về vai trò giáo viên và học sinh trong STEM:\n1. Giáo viên là người định hướng, hỗ trợ, cố vấn.\n2. Học sinh chủ động khám phá và làm việc nhóm.\n3. Giáo viên làm thay toàn bộ các công đoạn khó.\n4. Học sinh được đưa ra nhiều giải pháp sáng tạo.\n5. Lớp học STEM khuyến khích tranh luận, phản biện.\n6. Giáo viên bắt học sinh sao chép y hệt một cách làm.\n7. Học sinh tự đánh giá và đánh giá chéo sản phẩm.\n8. Giáo viên chỉ chấm điểm giấy cuối kì duy nhất.", c: "1245", ex: "Các nhận định đúng là 1, 2, 4, 5 vì đề cao tính chủ động, sáng tạo của học sinh và vai trò cố vấn của giáo viên." }, { id: "STEM.36", q: "Cho các nhận định sau về kiểm tra, đánh giá trong STEM:\n1. Đánh giá toàn diện cả quá trình và sản phẩm.\n2. Chỉ dùng bài thi tự luận viết tay truyền thống.\n3. Sử dụng rubrics là công cụ đánh giá hiệu quả.\n4. Đánh giá thái độ làm việc nhóm của học sinh.\n5. Tiêu chí đánh giá cần rõ ràng và công khai.\n6. Giáo viên chấm điểm dựa vào cảm tính cá nhân.\n7. Khuyến khích tự đánh giá và đánh giá đồng đẳng.\n8. Kết quả đánh giá không có giá trị phản hồi.", c: "1345", ex: "Các nhận định đúng là 1, 3, 4, 5 vì đánh giá STEM mang tính toàn diện, sử dụng bảng tiêu chí rubrics công khai, minh bạch." }, { id: "STEM.37", q: "Cho các nhận định sau về vật liệu và điều kiện thực hiện STEM:\n1. Có thể dùng vật liệu tái chế, chi phí thấp.\n2. Bắt buộc phải có phòng lab robot đắt tiền.\n3. Tận dụng vật dụng sinh hoạt hằng ngày làm học liệu.\n4. Sự sáng tạo của giáo viên là yếu tố quyết định.\n5. Địa phương khó khăn không thể triển khai STEM.\n6. Công nghệ thông tin hỗ trợ đắc lực cho bài học.\n7. Huy động nguồn lực xã hội hóa từ phụ huynh.\n8. Học sinh cấm mang vật liệu từ nhà đến lớp.", c: "1346", ex: "Các nhận định đúng là 1, 3, 4, 6 vì STEM tận dụng vật liệu gần gũi, tái chế, đề cao sáng tạo của giáo viên và ứng dụng CNTT." }, { id: "STEM.38", q: "Cho các nhận định sau về ý nghĩa của giáo dục STEM:\n1. Phát triển phẩm chất và năng lực học sinh.\n2. Vận dụng kiến thức liên môn giải quyết thực tiễn.\n3. Biến học sinh thành cỗ máy ghi nhớ máy móc.\n4. Rèn luyện kĩ năng mềm: làm việc nhóm, phản biện.\n5. Kích thích đam mê nghiên cứu khoa học kĩ thuật.\n6. Làm giảm sút thành tích học tập văn hóa trên lớp.\n7. Tạo cơ hội hiện thực hóa ý tưởng sáng tạo.\n8. Gây áp lực tâm lí căng thẳng quá mức cho học sinh.", c: "1245", ex: "Các nhận định đúng là 1, 2, 4, 5 phản ánh đúng những giá trị thiết thực mà giáo dục STEM mang lại cho người học." }, { id: "STEM.39", q: "Ngày 14/8/2020, Bộ GD&ĐT đã ban hành Công văn về việc triển khai thực hiện giáo dục STEM trong trường trung học, đó là công văn số mấy?", c: "3098", ex: "Công văn số 3098/BGDĐT-GDTrH được ban hành ngày 14/8/2020 là văn bản quan trọng chỉ đạo thực hiện giáo dục STEM trong cấp trung học." }, { id: "STEM.40", q: "Ngày 26/12/2018, lần đầu tiên Bộ GD&ĐT đưa khái niệm và định hướng giáo dục STEM vào trong Chương trình giáo dục phổ thông tổng thể, đó là thông tư số mấy?", c: "32", ex: "Thông tư số 32/2018/TT-BGDĐT ban hành Chương trình giáo dục phổ thông mới, đặt nền móng cho việc triển khai giáo dục STEM." } ] };
     // --- STATE MANAGER ---
     let state_data = {
         user: { name: '', sbd: '', class: '', school: '', mcImg: '', playerImg: '' },
@@ -141,6 +399,7 @@
         document.getElementById('btn-next')?.classList.add('hidden');
         document.getElementById('h-expert').classList.toggle('hidden', state_data.currentIdx < 12);
         document.getElementById('btn-stop').classList.toggle('hidden', state_data.currentIdx < 5 || state_data.mode === 'KIEM_TRA');
+
         const opts = document.getElementById('q-options'); opts.innerHTML = '';
         
         if (state_data.currentIdx < 12) {
@@ -215,6 +474,7 @@
             const canvas = document.getElementById('scratch-canvas');
             if(canvas) canvas.style.display = 'none';
         }
+
         await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'results'), { 
             ...state_data.user, 
             score: final, 
@@ -239,8 +499,10 @@
         ctx.fillStyle = '#94a3b8'; ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.font = 'bold 16px Roboto'; ctx.fillStyle = '#1e293b'; ctx.textAlign = 'center';
         ctx.fillText('CÀO ĐỂ XEM ĐIỂM SỐ', canvas.width/2, canvas.height/2 + 5);
+
         let drawing = false;
         const totalPixels = canvas.width * canvas.height;
+
         const scratch = (e) => {
             if(!drawing) return;
             const r = canvas.getBoundingClientRect();
@@ -295,13 +557,8 @@
             state_data.user = { name: n, sbd: s, class: c, school: sc, mcImg: document.getElementById('view-mc').src, playerImg: document.getElementById('view-player').src };
             localStorage.setItem('mil_v3_user_save_pro', JSON.stringify(state_data.user));
             state_data.mode = mode; state_data.startTime = new Date(); state_data.userAnswers = Array(20).fill(null); state_data.currentIdx = 0; state_data.score = 0;
-            
-            const q1 = shuffleArray(BANK_MCQ).slice(0, 12).map(q => { 
-                const o = q.a.map((v, i) => ({v, isCorrect: i === q.c})); 
-                const shuffledO = shuffleArray(o); 
-                return {...q, a: shuffledO.map(x => x.v), c: shuffledO.findIndex(x => x.isCorrect)}; 
-            });
-            state_data.questions = [...q1, ...shuffleArray(BANK_TF).slice(0, 4), ...shuffleArray(BANK_SHORT).slice(0, 4)];
+            const q1 = shuffleArray([...BANK_MCQ]).slice(0, 12).map(q => { const o = q.a.map((v, i) => ({v, isCorrect: i === q.c})); shuffleArray(o); return {...q, a: o.map(x => x.v), c: o.findIndex(x => x.isCorrect)}; });
+            state_data.questions = [...q1, ...shuffleArray([...BANK_TF]).slice(0, 4), ...shuffleArray([...BANK_SHORT]).slice(0, 4)];
             
             if (mode === 'KIEM_TRA' || mode === 'GHE_NONG') {
                 try {
@@ -310,6 +567,7 @@
                     else if(d.webkitRequestFullscreen) d.webkitRequestFullscreen().catch(()=>{});
                 } catch(e) {}
             }
+
             document.getElementById('screen-home')?.classList.add('hidden');
             document.getElementById('screen-game')?.classList.remove('hidden');
             document.getElementById('ui-p-name').innerText = n; document.getElementById('ui-p-info').innerText = `${s} | ${c} | ${sc}`;
@@ -331,7 +589,7 @@
                 [0,1,2,3].sort(()=>Math.random()-0.5).forEach(i => { if(i !== q.c && count < 2) { btns[i].style.visibility = 'hidden'; count++; } });
             } else {
                 const currentLetter = String.fromCharCode(65 + q.c);
-                const advice = q.ex ? q.ex.replace(/Phương án [A-D] ĐÚNG/g, `Phương án ${currentLetter} ĐÚNG`) : "Hãy suy nghĩ kỹ dựa trên kiến thức đã học!";
+                const advice = q.ex.replace(/Phương án [A-D] ĐÚNG/g, `Phương án ${currentLetter} ĐÚNG`);
                 box.innerHTML = `<b class="text-yellow-400 uppercase text-[10pt]">Trợ giúp giáo khoa:</b><br>${advice}`;
             }
         },
@@ -381,7 +639,7 @@
             state_data.questions.forEach((q, i) => { const ua = state_data.userAnswers[i]; if(!ua) return;
                 const div = document.createElement('div'); div.className = `p-5 glass rounded-3xl border-l-8 ${ua.isCorrect ? 'border-green-500' : 'border-red-500'} mb-6 text-black bg-white shadow-lg text-left`;
                 const currentLetter = String.fromCharCode(65 + q.c);
-                const adviceFixed = q.ex ? q.ex.replace(/Phương án [A-D] ĐÚNG/g, `Phương án ${currentLetter} ĐÚNG`) : "";
+                const adviceFixed = q.ex.replace(/Phương án [A-D] ĐÚNG/g, `Phương án ${currentLetter} ĐÚNG`);
                 let h = `<div class="text-[9px] font-black uppercase mb-2 text-slate-400">CÂU ${i+1} (${ua.earned.toFixed(2)}đ)</div><div class="text-sm font-bold mb-4 text-left text-black font-black">${q.q}</div>`;
                 if (i < 12) h += `<div class="space-y-2">` + q.a.map((o, idx) => `<div class="p-3 rounded-xl border-2 ${idx === q.c ? 'bg-green-50 border-green-500' : (idx === ua.userChoice ? 'bg-red-50 border-red-500' : 'bg-slate-50')} text-xs font-bold text-left text-black font-black">${o}</div>`).join('') + `</div>`;
                 else if (i < 16) h += `<div class="space-y-2">` + q.items.map((it, idx) => `<div class="p-2 border-b text-xs ${ua.userChoice[idx] === q.c[idx] ? 'text-green-600' : 'text-red-600'} font-bold text-left font-black">${it} → <span class="uppercase">${ua.userChoice[idx]?'ĐÚNG':'SAI'}</span></div>`).join('') + `</div>`;
@@ -428,3 +686,5 @@
         }
     });
 </script>
+</body>
+</html>
