@@ -1,4 +1,4 @@
-<!-- MÃ NGUỒN ỔN ĐỊNH NHẤT - FULL 100% -->
+<!-- MÃ NGUỒN ỔN ĐỊNH - TƯƠNG THÍCH HOÀN TOÀN TRÊN IPHONE/SAFARI -->
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -518,14 +518,20 @@ if (userInfoEl) {
     document.getElementById('wish-overlay').style.display = 'flex';
     document.getElementById('wish-cheat-info').style.display = (mode === 'test') ? 'block' : 'none';
     startFire();
+    
     if(mode === 'test') {
-        document.documentElement.requestFullscreen().then(() => {
+        if (document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen().then(() => {
+                canCheckCheat = true;
+            }).catch(e => {
+                console.log("Fullscreen bị chặn hoặc không hỗ trợ, tiếp tục kích hoạt cơ chế an toàn.");
+                canCheckCheat = true;
+            });
+        } else {
             canCheckCheat = true;
-        }).catch(e => {
-            alert("Lỗi: Bạn cần đồng ý Toàn màn hình để thực hiện bài thi này.");
-            location.reload();
-        });
+        }
     }
+    
     wishTimeoutId = setTimeout(() => {
         if(!isQuizRunning) return; 
         document.getElementById('wish-overlay').style.display = 'none';
@@ -641,7 +647,7 @@ async function calculateResult() {
         } catch(e) { console.error(e); }
     }
     fetchRankAndLeaderboard(fs);
-    if (document.fullscreenElement) { document.exitFullscreen().catch(()=>{}); }
+    if (document.fullscreenElement && document.exitFullscreen) { document.exitFullscreen().catch(()=>{}); }
 }
 async function fetchRankAndLeaderboard(myScore) {
     try {
@@ -822,7 +828,8 @@ document.getElementById('btn-export-excel').onclick = () => {
 function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
 function startTimer() { clearInterval(timerInt); timerInt = setInterval(() => { timeLeft--; const m = Math.floor(timeLeft/60), s = timeLeft%60, el = document.getElementById('timer'); if(el) el.innerText = `${m}:${s.toString().padStart(2,'0')}`; if(timeLeft <= 0) calculateResult(); }, 1000); }
-// --- CHỐNG GIAN LẬN ---
+
+// --- CHỐNG GIAN LẬN (ĐÃ TƯƠNG THÍCH IPHONE / SAFARI) ---
 const triggerCheat = () => { 
     if (canCheckCheat && isQuizRunning && mode === 'test' && !isProcessingCheat) { 
         isProcessingCheat = true;
@@ -831,16 +838,14 @@ const triggerCheat = () => {
         document.getElementById('cheat-modal').style.display = 'flex'; 
     } 
 };
-document.addEventListener('fullscreenchange', () => { 
-    if (canCheckCheat && isQuizRunning && mode === 'test' && !document.fullscreenElement) {
-        triggerCheat(); 
-    }
-});
+
+// Theo dõi sự kiện ẩn tab hoặc chuyển ứng dụng trên điện thoại
 document.addEventListener('visibilitychange', () => { 
     if(canCheckCheat && isQuizRunning && mode === 'test' && document.visibilityState === 'hidden') {
         triggerCheat(); 
     }
 });
+
 window.addEventListener('blur', () => {
     setTimeout(() => {
         if (canCheckCheat && isQuizRunning && mode === 'test' && !document.hasFocus()) {
@@ -848,6 +853,7 @@ window.addEventListener('blur', () => {
         }
     }, 500);
 });
+
 window.onload = () => { 
     document.getElementById('main-header').style.display = 'none'; 
     if(localStorage.getItem('vly9_u')) document.getElementById('username').value = localStorage.getItem('vly9_u');
